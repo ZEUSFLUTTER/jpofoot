@@ -38,29 +38,34 @@ export async function getDashboardData() {
 
     const teams = await Promise.all(teamsSnap.docs.map(async (teamDoc) => {
       const data = teamDoc.data();
+      // REMOVED orderBy to avoid composite index requirement
       const playersSnap = await getDocs(query(
         collection(db, "players"), 
-        where("teamId", "==", teamDoc.id),
-        orderBy("number", "asc")
+        where("teamId", "==", teamDoc.id)
       ));
+      
+      const players = playersSnap.docs.map(p => {
+        const pData = p.data();
+        return {
+          id: p.id,
+          firstName: pData.firstName || "",
+          lastName: pData.lastName || "",
+          number: pData.number || 0,
+          teamId: pData.teamId || "",
+          position: pData.position || null,
+          photoUrl: pData.photoUrl || null,
+          stats: pData.stats || null
+        };
+      }).sort((a, b) => a.number - b.number); // Sort in-memory
+
       return {
         id: teamDoc.id,
         name: data.name || "",
         logoUrl: data.logoUrl || null,
         colors: data.colors || null,
-        players: playersSnap.docs.map(p => {
-          const pData = p.data();
-          return {
-            id: p.id,
-            firstName: pData.firstName || "",
-            lastName: pData.lastName || "",
-            number: pData.number || 0,
-            teamId: pData.teamId || "",
-            position: pData.position || null,
-            photoUrl: pData.photoUrl || null,
-            stats: pData.stats || null
-          };
-        })
+        coachFirstName: data.coachFirstName || "",
+        coachLastName: data.coachLastName || "",
+        players
       };
     }));
 
@@ -181,8 +186,10 @@ export async function getMatchById(id: string) {
     const fetchPlayers = async (teamId: string) => {
       if (!teamId) return [];
       try {
-        const snap = await getDocs(query(collection(db, "players"), where("teamId", "==", teamId), orderBy("number", "asc")));
-        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        // REMOVED orderBy to avoid composite index requirement
+        const snap = await getDocs(query(collection(db, "players"), where("teamId", "==", teamId)));
+        return snap.docs.map(d => ({ id: d.id, ...d.data() as any }))
+          .sort((a, b) => a.number - b.number); // Sort in-memory
       } catch (e) {
         console.error(`Error fetching players for team ${teamId}:`, e);
         return [];

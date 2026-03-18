@@ -41,6 +41,8 @@ type Player = {
 type Team = {
   id: string;
   name: string;
+  coachFirstName?: string;
+  coachLastName?: string;
   players: Player[];
 };
 
@@ -340,7 +342,7 @@ export function AdminPanel({ teams, matches }: Props) {
             <div className="max-h-40 overflow-auto space-y-1">
               {teams.map(team => (
                 <div key={team.id} className="flex justify-between items-center bg-zinc-800/50 p-2 rounded text-sm">
-                  <span>{team.name} ({team.players.length} joueurs)</span>
+                  <span>{team.name} ({team.players.length} j.) - <small className="text-zinc-500 italic">Coach: {team.coachFirstName} {team.coachLastName}</small></span>
                   <button 
                     onClick={() => startTransition(() => handleDeleteTeam(team.id))}
                     className="text-rose-400 hover:text-rose-300 text-xs"
