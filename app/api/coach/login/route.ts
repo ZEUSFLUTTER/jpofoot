@@ -5,7 +5,9 @@ import { cookies } from "next/headers";
 
 export async function POST(request: Request) {
   try {
-    const { firstName, lastName } = await request.json();
+    let { firstName, lastName } = await request.json();
+    firstName = firstName?.trim();
+    lastName = lastName?.trim();
 
     if (!firstName || !lastName) {
       return NextResponse.json({ error: "Prénom et Nom sont requis" }, { status: 400 });

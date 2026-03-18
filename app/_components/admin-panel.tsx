@@ -134,10 +134,10 @@ export function AdminPanel({ teams, matches }: Props) {
     }
 
     const payload = {
-      name: String(formData.get("name") ?? ""),
-      colors: String(formData.get("colors") ?? ""),
-      coachFirstName: String(formData.get("coachFirstName") ?? ""),
-      coachLastName: String(formData.get("coachLastName") ?? ""),
+      name: (formData.get("name") as string)?.trim() || "",
+      colors: (formData.get("colors") as string)?.trim() || "",
+      coachFirstName: (formData.get("coachFirstName") as string)?.trim() || "",
+      coachLastName: (formData.get("coachLastName") as string)?.trim() || "",
       logoUrl: logoUrl,
     };
     const response = await fetch("/api/admin/equipes", {
@@ -204,10 +204,10 @@ export function AdminPanel({ teams, matches }: Props) {
     }
 
     const payload = {
-      firstName: String(formData.get("firstName") ?? ""),
-      lastName: String(formData.get("lastName") ?? ""),
+      firstName: String(formData.get("firstName") ?? "").trim(),
+      lastName: String(formData.get("lastName") ?? "").trim(),
       number: Number(formData.get("number") ?? 0),
-      position: String(formData.get("position") ?? ""),
+      position: String(formData.get("position") ?? "").trim(),
       photoUrl: photoUrl,
       teamId: selectedTeam,
     };
@@ -369,7 +369,7 @@ export function AdminPanel({ teams, matches }: Props) {
   }
 
   return (
-    <section className="rounded-[2.5rem] border border-zinc-800 bg-zinc-950/80 p-8 shadow-2xl shadow-cyan-500/5 backdrop-blur-xl font-sans">
+    <section className="rounded-3xl border border-zinc-800 bg-zinc-950/80 p-8 shadow-2xl shadow-cyan-500/5 backdrop-blur-xl font-primary">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
           <h2 className="text-3xl font-black uppercase italic tracking-tighter text-cyan-300">Portail Administration</h2>
@@ -383,11 +383,11 @@ export function AdminPanel({ teams, matches }: Props) {
         )}
       </div>
       
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
+      <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
         {/* Teams & Players management column */}
-        <div className="space-y-8">
+        <div className="space-y-8 h-full">
           {/* Creation Forms */}
-          <div className="grid gap-6 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2 items-stretch">
             <form
               className="space-y-4 rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6"
               action={(formData) => startTransition(() => handleCreateTeam(formData))}
@@ -503,14 +503,14 @@ export function AdminPanel({ teams, matches }: Props) {
                     <button
                       disabled={isPending || !selectedMatch || (selectedMatchData && new Date(selectedMatchData.date) > new Date())}
                       onClick={() => startTransition(() => handleUpdateStatus(MatchStatus.LIVE))}
-                      className="rounded-2xl bg-emerald-600 px-6 py-4 text-xs font-black uppercase tracking-[0.2em] text-white hover:bg-emerald-500 shadow-xl shadow-emerald-600/20 transition-all active:scale-95 disabled:opacity-30"
+                      className="flex h-16 items-center justify-center rounded-2xl bg-emerald-600 px-4 py-2 text-center text-[10px] font-black uppercase tracking-[0.2em] text-white hover:bg-emerald-500 shadow-xl shadow-emerald-600/20 transition-all active:scale-95 disabled:opacity-30"
                     >
                       Démarrer Live
                     </button>
                     <button
                       disabled={isPending || !selectedMatch}
                       onClick={() => startTransition(() => handleUpdateStatus(MatchStatus.PREVU))}
-                      className="rounded-2xl bg-amber-600 px-6 py-4 text-xs font-black uppercase tracking-[0.2em] text-white hover:bg-amber-500 shadow-xl shadow-amber-600/20 transition-all active:scale-95 disabled:opacity-30"
+                      className="flex h-16 items-center justify-center rounded-2xl bg-amber-600 px-4 py-2 text-center text-[10px] font-black uppercase tracking-[0.2em] text-white hover:bg-amber-500 shadow-xl shadow-amber-600/20 transition-all active:scale-95 disabled:opacity-30"
                     >
                       Mettre en Pause
                     </button>

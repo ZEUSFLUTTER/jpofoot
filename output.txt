@@ -1,0 +1,19 @@
+﻿Registered Teams & Coaches:
+- Team: ASR
+  Coach: "Ulrich " "GANDA"
+  ID: 4hwDNZPcTRBlZU4xQlZJ
+- Team: L1-A
+  Coach: "Martin" "Bartel"
+  ID: B2omBhpyKU9zBLGN6NHa
+- Team: GLSI
+  Coach: "Godglory" "ADZESSAYA "
+  ID: EDX2SOTE50aL09EyR1yY
+- Team: L2-A
+  Coach: "Jean" "Castil"
+  ID: NLo7Lz4hA2OJADU3aYUg
+- Team: L1-B
+  Coach: "Van" "Persie"
+  ID: XEREVGsVgNd7y9aSHbe5
+- Team: L2-B
+  Coach: "Th├®o " "Vale"
+  ID: wjEdM5TL4iAqSkjqeirE

@@ -19,7 +19,10 @@ export default function CoachLoginPage() {
       const res = await fetch("/api/coach/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName }),
+        body: JSON.stringify({ 
+          firstName: firstName.trim(), 
+          lastName: lastName.trim() 
+        }),
       });
 
       const data = await res.json();
