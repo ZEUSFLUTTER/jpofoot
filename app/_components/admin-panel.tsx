@@ -41,6 +41,8 @@ type Player = {
 type Team = {
   id: string;
   name: string;
+  logoUrl?: string | null;
+  colors?: string | null;
   coachFirstName?: string;
   coachLastName?: string;
   players: Player[];
@@ -79,6 +81,8 @@ export function AdminPanel({ teams, matches }: Props) {
   const [selectedTeam, setSelectedTeam] = useState(teams[0]?.id ?? "");
   const [selectedMatch, setSelectedMatch] = useState(matches[0]?.id ?? "");
   const [message, setMessage] = useState("");
+  const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+  const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
 
   const teamPlayers = useMemo(
     () => teams.find((team) => team.id === selectedTeam)?.players ?? [],
@@ -161,6 +165,36 @@ export function AdminPanel({ teams, matches }: Props) {
     setMessage("Équipe supprimée");
     router.refresh();
   }
+  
+  async function handleUpdateTeam(formData: FormData) {
+    if (!editingTeam) return;
+    const file = formData.get("logoFile") as File;
+    let logoUrl = editingTeam.logoUrl || "";
+    if (file && file.size > 0) {
+      logoUrl = (await uploadFile(file)) || logoUrl;
+    }
+
+    const payload = {
+      name: String(formData.get("name") ?? ""),
+      colors: String(formData.get("colors") ?? ""),
+      coachFirstName: String(formData.get("coachFirstName") ?? ""),
+      coachLastName: String(formData.get("coachLastName") ?? ""),
+      logoUrl: logoUrl,
+    };
+    const response = await fetch(`/api/admin/equipes/${editingTeam.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const result = await response.json();
+      setMessage(result.error || "Erreur lors de la modification");
+      return;
+    }
+    setMessage("Équipe modifiée");
+    setEditingTeam(null);
+    router.refresh();
+  }
 
   async function handleCreatePlayer(formData: FormData) {
     const file = formData.get("photoFile") as File;
@@ -199,6 +233,37 @@ export function AdminPanel({ teams, matches }: Props) {
       return;
     }
     setMessage("Joueur supprimé");
+    router.refresh();
+  }
+
+  async function handleUpdatePlayer(formData: FormData) {
+    if (!editingPlayer) return;
+    const file = formData.get("photoFile") as File;
+    let photoUrl = editingPlayer.photoUrl || "";
+    if (file && file.size > 0) {
+      photoUrl = (await uploadFile(file)) || photoUrl;
+    }
+
+    const payload = {
+      firstName: String(formData.get("firstName") ?? ""),
+      lastName: String(formData.get("lastName") ?? ""),
+      number: Number(formData.get("number") ?? 0),
+      position: String(formData.get("position") ?? ""),
+      photoUrl: photoUrl,
+      teamId: editingPlayer.teamId,
+    };
+    const response = await fetch(`/api/admin/players/${editingPlayer.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const result = await response.json();
+      setMessage(result.error || "Erreur lors de la modification");
+      return;
+    }
+    setMessage("Joueur modifié");
+    setEditingPlayer(null);
     router.refresh();
   }
 
@@ -337,18 +402,51 @@ export function AdminPanel({ teams, matches }: Props) {
             </button>
           </form>
 
+          {editingTeam && (
+            <form
+              className="space-y-2 rounded-xl border border-cyan-500/50 bg-zinc-900 p-4"
+              action={(formData) => startTransition(() => handleUpdateTeam(formData))}
+            >
+              <div className="flex justify-between items-center">
+                <h3 className="font-medium text-cyan-300">Modifier l'équipe</h3>
+                <button type="button" onClick={() => setEditingTeam(null)} className="text-zinc-500 hover:text-white">Annuler</button>
+              </div>
+              <input name="name" required defaultValue={editingTeam.name} placeholder="Ex: Terminale C4" className="w-full rounded bg-zinc-800 p-2 text-sm text-white" />
+              <div className="grid grid-cols-2 gap-2">
+                <input name="coachFirstName" required defaultValue={editingTeam.coachFirstName} placeholder="Prénom du Coach" className="rounded bg-zinc-800 p-2 text-sm text-white" />
+                <input name="coachLastName" required defaultValue={editingTeam.coachLastName} placeholder="Nom du Coach" className="rounded bg-zinc-800 p-2 text-sm text-white" />
+              </div>
+              <input name="colors" defaultValue={editingTeam.colors || ""} placeholder="Couleurs (Bleu / Blanc)" className="w-full rounded bg-zinc-800 p-2 text-sm text-white" />
+              <div className="space-y-1">
+                <label className="text-[10px] text-zinc-500 uppercase font-bold">Logo de l'équipe (laisser vide pour garder l'ancien)</label>
+                <input name="logoFile" type="file" accept="image/*" className="w-full text-xs text-zinc-400 file:mr-4 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-cyan-400 hover:file:bg-zinc-700" />
+              </div>
+              <button disabled={isPending || isUploading} className="w-full rounded bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-700 transition-colors disabled:opacity-50">
+                {isUploading ? "Téléchargement..." : "Enregistrer les modifications"}
+              </button>
+            </form>
+          )}
+
           <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
             <h3 className="font-medium text-zinc-100 mb-2">Équipes existantes</h3>
             <div className="max-h-40 overflow-auto space-y-1">
               {teams.map(team => (
                 <div key={team.id} className="flex justify-between items-center bg-zinc-800/50 p-2 rounded text-sm">
                   <span>{team.name} ({team.players.length} j.) - <small className="text-zinc-500 italic">Coach: {team.coachFirstName} {team.coachLastName}</small></span>
-                  <button 
-                    onClick={() => startTransition(() => handleDeleteTeam(team.id))}
-                    className="text-rose-400 hover:text-rose-300 text-xs"
-                  >
-                    Supprimer
-                  </button>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => setEditingTeam(team)}
+                      className="text-cyan-400 hover:text-cyan-300 text-xs"
+                    >
+                      Modifier
+                    </button>
+                    <button 
+                      onClick={() => startTransition(() => handleDeleteTeam(team.id))}
+                      className="text-rose-400 hover:text-rose-300 text-xs"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -392,6 +490,47 @@ export function AdminPanel({ teams, matches }: Props) {
             {isUploading ? "Téléchargement..." : "Ajouter au club"}
           </button>
           
+          {editingPlayer && (
+            <div className="space-y-2 mt-4 pt-4 border-t border-zinc-800">
+              <div className="flex justify-between items-center">
+                <h3 className="font-medium text-cyan-300 text-sm">Modifier le joueur</h3>
+                <button type="button" onClick={() => setEditingPlayer(null)} className="text-zinc-500 hover:text-white text-xs">Annuler</button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <input name="edit_firstName" required defaultValue={editingPlayer.firstName} placeholder="Prénom" className="rounded bg-zinc-800 p-2 text-sm text-white" id="edit_p_fname" />
+                <input name="edit_lastName" required defaultValue={editingPlayer.lastName} placeholder="Nom" className="rounded bg-zinc-800 p-2 text-sm text-white" id="edit_p_lname" />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <input name="edit_number" type="number" required defaultValue={editingPlayer.number} placeholder="Numéro" className="rounded bg-zinc-800 p-2 text-sm text-white" id="edit_p_num" />
+                <select name="edit_position" defaultValue={editingPlayer.position || ""} className="rounded bg-zinc-800 p-2 text-sm text-zinc-300" id="edit_p_pos">
+                  <option value="">Choisir un poste</option>
+                  {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] text-zinc-500 uppercase font-bold">Photo (laisser vide pour garder)</label>
+                <input name="edit_photoFile" type="file" accept="image/*" className="w-full text-xs text-zinc-400 file:mr-4 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-cyan-400 hover:file:bg-zinc-700" id="edit_p_photo" />
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  const formData = new FormData();
+                  formData.append("firstName", (document.getElementById("edit_p_fname") as HTMLInputElement).value);
+                  formData.append("lastName", (document.getElementById("edit_p_lname") as HTMLInputElement).value);
+                  formData.append("number", (document.getElementById("edit_p_num") as HTMLInputElement).value);
+                  formData.append("position", (document.getElementById("edit_p_pos") as HTMLSelectElement).value);
+                  const file = (document.getElementById("edit_p_photo") as HTMLInputElement).files?.[0];
+                  if (file) formData.append("photoFile", file);
+                  startTransition(() => handleUpdatePlayer(formData));
+                }}
+                disabled={isPending || isUploading} 
+                className="w-full rounded bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-700 transition-colors disabled:opacity-50"
+              >
+                {isUploading ? "Téléchargement..." : "Sauvegarder"}
+              </button>
+            </div>
+          )}
+          
           <div className="mt-3">
             <h4 className="text-xs font-semibold text-zinc-500 uppercase mb-1">Effectif actuel</h4>
             <div className="max-h-32 overflow-auto space-y-1">
@@ -401,13 +540,22 @@ export function AdminPanel({ teams, matches }: Props) {
                     {player.photoUrl && <img src={player.photoUrl} className="w-5 h-5 rounded-full object-cover" />}
                     <span className="text-xs text-zinc-400">#{player.number} {player.firstName} {player.lastName}</span>
                   </div>
-                  <button 
-                    onClick={() => startTransition(() => handleDeletePlayer(player.id))}
-                    className="text-rose-500/50 hover:text-rose-500 text-[10px]"
-                    type="button"
-                  >
-                    Retirer
-                  </button>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => setEditingPlayer(player)}
+                      className="text-cyan-500/50 hover:text-cyan-500 text-[10px]"
+                      type="button"
+                    >
+                      Modifier
+                    </button>
+                    <button 
+                      onClick={() => startTransition(() => handleDeletePlayer(player.id))}
+                      className="text-rose-500/50 hover:text-rose-500 text-[10px]"
+                      type="button"
+                    >
+                      Retirer
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -535,7 +683,7 @@ export function AdminPanel({ teams, matches }: Props) {
             <div className="max-h-40 overflow-auto space-y-1">
               {selectedMatchData?.events.map((event) => (
                 <div key={event.id} className="flex justify-between items-center text-xs bg-zinc-950 p-2 rounded">
-                  <span>{event.minute}' <b>{event.type}</b> - {event.player.firstName} {event.player.lastName}</span>
+                  <span>{event.minute}&apos; <b>{event.type}</b> - {event.player.firstName} {event.player.lastName}</span>
                   {!isFinished && (
                     <button 
                       onClick={() => startTransition(() => handleDeleteEvent(event.id))}

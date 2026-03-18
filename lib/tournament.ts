@@ -54,7 +54,10 @@ export async function getDashboardData() {
           teamId: pData.teamId || "",
           position: pData.position || null,
           photoUrl: pData.photoUrl || null,
-          stats: pData.stats || null
+          stats: pData.stats ? {
+            ...pData.stats,
+            updatedAt: pData.stats.updatedAt instanceof Timestamp ? pData.stats.updatedAt.toDate().toISOString() : pData.stats.updatedAt
+          } : null
         };
       }).sort((a, b) => a.number - b.number); // Sort in-memory
 
@@ -279,6 +282,80 @@ export async function getMatchById(id: string) {
     };
   } catch (error) {
     console.error(`Error in getMatchById for match ${id}:`, error);
+    return null;
+  }
+}
+
+export async function getTeamById(id: string) {
+  try {
+    const teamDoc = await getDoc(doc(db, "teams", id));
+    if (!teamDoc.exists()) return null;
+
+    const data = teamDoc.data();
+    
+    // Fetch players for this team
+    const playersSnap = await getDocs(query(
+      collection(db, "players"), 
+      where("teamId", "==", id)
+    ));
+    
+    const players = playersSnap.docs.map(p => {
+      const pData = p.data();
+      return {
+        id: p.id,
+        firstName: pData.firstName || "",
+        lastName: pData.lastName || "",
+        number: pData.number || 0,
+        teamId: pData.teamId || "",
+        position: pData.position || null,
+        photoUrl: pData.photoUrl || null,
+        stats: pData.stats || null
+      };
+    }).sort((a, b) => a.number - b.number);
+
+    // Fetch last 3 matches for this team
+    const matchesSnap = await getDocs(query(
+      collection(db, "matches"),
+      where("status", "==", MatchStatus.FINI)
+    ));
+
+    const allMatches = matchesSnap.docs.map(m => {
+      const mData = m.data() as any;
+      return {
+        id: m.id,
+        ...mData,
+        date: mData.date instanceof Timestamp ? mData.date.toDate() : new Date(mData.date)
+      };
+    });
+
+    const teamMatches = allMatches
+      .filter((m: any) => m.teamAId === id || m.teamBId === id)
+      .sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
+      .slice(0, 3);
+
+    // Hydrate matches with team names
+    const teamsSnap = await getDocs(collection(db, "teams"));
+    const teamsMap = new Map();
+    teamsSnap.docs.forEach(d => teamsMap.set(d.id, d.data().name));
+
+    const hydratedMatches = teamMatches.map(m => ({
+      ...m,
+      teamA: { name: teamsMap.get(m.teamAId) || "Inconnu" },
+      teamB: { name: teamsMap.get(m.teamBId) || "Inconnu" }
+    }));
+
+    return {
+      id: teamDoc.id,
+      name: data.name || "",
+      logoUrl: data.logoUrl || null,
+      colors: data.colors || null,
+      coachFirstName: data.coachFirstName || "",
+      coachLastName: data.coachLastName || "",
+      players,
+      lastMatches: hydratedMatches
+    };
+  } catch (error) {
+    console.error(`Error in getTeamById for team ${id}:`, error);
     return null;
   }
 }

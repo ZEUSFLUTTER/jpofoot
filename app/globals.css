@@ -22,51 +22,76 @@
 
 /* === Dark mode (default) === */
 :root, [data-theme="dark"] {
-  --bg-primary: #09090b;
-  --bg-secondary: #18181b;
-  --bg-card: #18181b;
-  --border-color: #27272a;
-  --text-primary: #f4f4f5;
-  --text-muted: #71717a;
+  --background: #09090b;
+  --foreground: #f4f4f5;
+  --card: #18181b;
+  --card-foreground: #f4f4f5;
+  --muted: #71717a;
+  --muted-foreground: #a1a1aa;
+  --border: #27272a;
+  --accent: #06b6d4; /* cyan-500 */
 }
 
 /* === Light mode === */
 [data-theme="light"] {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f4f4f5;
-  --bg-card: #fafafa;
-  --border-color: #e4e4e7;
-  --text-primary: #09090b;
-  --text-muted: #71717a;
+  --background: #f5f5f7; /* Softer white for eye comfort */
+  --foreground: #111111; /* Deep graphite for high contrast */
+  --card: #ffffff;
+  --card-foreground: #111111;
+  --muted: #e4e4e7;
+  --muted-foreground: #52525b;
+  --border: #d4d4d8;
+  --accent: #0891b2; /* cyan-600 */
 }
 
-[data-theme="light"] body {
-  background: var(--bg-primary);
-  color: var(--text-primary);
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --border-color: var(--border);
+  
+  /* Map standard zinc colors to theme variables for compatibility with existing components */
+  /* Light levels -> Dark Foreground */
+  --color-zinc-50: var(--foreground);
+  --color-zinc-100: var(--foreground);
+  --color-zinc-200: var(--foreground);
+  --color-zinc-300: var(--foreground);
+  
+  /* Mid levels -> Muted Foreground */
+  --color-zinc-400: var(--muted-foreground);
+  --color-zinc-500: var(--muted-foreground);
+  --color-zinc-600: var(--muted-foreground);
+  
+  /* Dark levels -> Background/Surfaces */
+  --color-zinc-700: var(--border);
+  --color-zinc-800: var(--muted);
+  --color-zinc-900: var(--card);
+  --color-zinc-950: var(--background);
+  
+  /* Map white and brand colors */
+  --color-white: var(--foreground);
+  --color-cyan-100: var(--accent);
+  --color-cyan-200: var(--accent);
+  --color-cyan-300: var(--accent);
+  --color-cyan-400: var(--accent);
+  --color-cyan-500: var(--accent);
+  
+  /* Map success/error colors for contrast */
+  --color-emerald-400: #059669; /* emerald-600 equivalent */
+  --color-emerald-500: #059669;
+  --color-emerald-600: #059669;
+  
+  --color-rose-400: #dc2626; /* rose-600 equivalent */
+  --color-rose-500: #dc2626;
+  --color-rose-600: #dc2626;
 }
-
-/* Swap zinc-950 backgrounds in light mode */
-[data-theme="light"] .bg-zinc-950 { background-color: #ffffff !important; }
-[data-theme="light"] .bg-zinc-900\/50 { background-color: #f4f4f5 !important; }
-[data-theme="light"] .bg-zinc-900\/30 { background-color: #f4f4f5 !important; }
-[data-theme="light"] .bg-zinc-900 { background-color: #f4f4f5 !important; }
-[data-theme="light"] .bg-zinc-800\/50 { background-color: #e4e4e7 !important; }
-[data-theme="light"] .bg-zinc-800 { background-color: #e4e4e7 !important; }
-[data-theme="light"] .bg-zinc-950\/80 { background-color: rgba(255,255,255,0.85) !important; }
-
-/* Swap text colors in light mode */
-[data-theme="light"] .text-zinc-100 { color: #18181b !important; }
-[data-theme="light"] .text-zinc-400 { color: #52525b !important; }
-[data-theme="light"] .text-zinc-500 { color: #71717a !important; }
-[data-theme="light"] .text-zinc-600 { color: #52525b !important; }
-[data-theme="light"] .text-white { color: #09090b !important; }
-
-/* Swap border colors in light mode */
-[data-theme="light"] .border-zinc-800 { border-color: #d4d4d8 !important; }
-[data-theme="light"] .border-zinc-900 { border-color: #e4e4e7 !important; }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
