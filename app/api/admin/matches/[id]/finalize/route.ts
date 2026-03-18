@@ -1,7 +1,8 @@
-import { MatchStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/firebase";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { finalizeMatchSchema } from "@/lib/validators";
+import { MatchStatus } from "@/lib/types";
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -14,32 +15,39 @@ export async function PATCH(request: Request, context: Context) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const matchExists = await prisma.match.findUnique({
-    where: { id },
-    select: { status: true },
-  });
+  const matchRef = doc(db, "matches", id);
+  const matchSnap = await getDoc(matchRef);
 
-  if (!matchExists) {
+  if (!matchSnap.exists()) {
     return NextResponse.json({ error: "Match introuvable" }, { status: 404 });
   }
 
-  if (matchExists.status === MatchStatus.FINI) {
+  const matchData = matchSnap.data();
+
+  if (matchData.status === MatchStatus.FINI) {
     return NextResponse.json({ error: "Ce match a déjà été validé." }, { status: 400 });
   }
 
-  const match = await prisma.match.update({
-    where: { id },
-    data: {
-      scoreA: parsed.data.scoreA,
-      scoreB: parsed.data.scoreB,
-      status: MatchStatus.FINI,
-      liveMinute: 90,
-    },
-    include: {
-      teamA: true,
-      teamB: true,
-    },
-  });
+  const updatedData = {
+    scoreA: parsed.data.scoreA,
+    scoreB: parsed.data.scoreB,
+    status: MatchStatus.FINI,
+    liveMinute: 90,
+  };
 
-  return NextResponse.json(match);
+  await updateDoc(matchRef, updatedData);
+
+  // Fetch teams for return object
+  const [teamASnap, teamBSnap] = await Promise.all([
+    getDoc(doc(db, "teams", matchData.teamAId)),
+    getDoc(doc(db, "teams", matchData.teamBId))
+  ]);
+
+  return NextResponse.json({
+    id,
+    ...matchData,
+    ...updatedData,
+    teamA: { id: teamASnap.id, ...teamASnap.data() },
+    teamB: { id: teamBSnap.id, ...teamBSnap.data() }
+  });
 }

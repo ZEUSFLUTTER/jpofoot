@@ -1,4 +1,4 @@
-import { EventType } from "@prisma/client";
+import { EventType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface EventsTimelineProps {

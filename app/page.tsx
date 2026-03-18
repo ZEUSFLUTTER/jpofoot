@@ -1,4 +1,4 @@
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/types";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { getDashboardData } from "@/lib/tournament";

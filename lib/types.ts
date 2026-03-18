@@ -1,7 +1,6 @@
 /**
- * Frontend-safe versions of Prisma enums.
- * These are used in Client Components to avoid importing directly from @prisma/client,
- * which can cause build errors on Vercel/Turbopack.
+ * Application-wide enums for Match Status and Event Types.
+ * These are used across the application to ensure Type-safety in both Server and Client Components.
  */
 
 export const MatchStatus = {

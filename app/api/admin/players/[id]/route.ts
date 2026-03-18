@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/firebase";
+import { doc, getDoc, updateDoc, deleteDoc, query, collection, where, getDocs, limit } from "firebase/firestore";
 import { updatePlayerSchema } from "@/lib/validators";
 
 type Context = { params: Promise<{ id: string }> };
@@ -13,48 +14,47 @@ export async function PATCH(request: Request, context: Context) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  // Duplicate name check if firstName or lastName is updated
+  const playerRef = doc(db, "players", id);
+  const playerSnap = await getDoc(playerRef);
+
+  if (!playerSnap.exists()) {
+    return NextResponse.json({ error: "Joueur non trouvé" }, { status: 404 });
+  }
+
+  const currentPlayer = playerSnap.data();
+
+  // Duplicate name check if firstName, lastName or teamId is updated
   if (parsed.data.firstName || parsed.data.lastName || parsed.data.teamId) {
-    const player = await prisma.player.findUnique({
-      where: { id },
-      select: { firstName: true, lastName: true, teamId: true },
-    });
+    const firstName = parsed.data.firstName ?? currentPlayer.firstName;
+    const lastName = parsed.data.lastName ?? currentPlayer.lastName;
+    const teamId = parsed.data.teamId ?? currentPlayer.teamId;
 
-    if (player) {
-      const firstName = parsed.data.firstName ?? player.firstName;
-      const lastName = parsed.data.lastName ?? player.lastName;
-      const teamId = parsed.data.teamId ?? player.teamId;
+    const qExisting = query(
+      collection(db, "players"),
+      where("teamId", "==", teamId),
+      where("firstName", "==", firstName),
+      where("lastName", "==", lastName),
+      limit(2) // We only need to find if there's *any other* player
+    );
+    const snapExisting = await getDocs(qExisting);
+    
+    const otherPlayer = snapExisting.docs.find(doc => doc.id !== id);
 
-      const existingPlayer = await prisma.player.findFirst({
-        where: {
-          teamId,
-          firstName,
-          lastName,
-          NOT: { id },
-        },
-      });
-
-      if (existingPlayer) {
-        return NextResponse.json({ error: "Un joueur avec ce nom et ce prénom existe déjà dans cette salle/équipe" }, { status: 400 });
-      }
+    if (otherPlayer) {
+      return NextResponse.json({ error: "Un joueur avec ce nom et ce prénom existe déjà dans cette salle/équipe" }, { status: 400 });
     }
   }
 
-  const updated = await prisma.player.update({
-    where: { id },
-    data: parsed.data,
-  });
+  await updateDoc(playerRef, parsed.data as any);
 
-  return NextResponse.json(updated);
+  return NextResponse.json({ id, ...currentPlayer, ...parsed.data });
 }
 
 export async function DELETE(request: Request, context: Context) {
   const { id } = await context.params;
 
   try {
-    await prisma.player.delete({
-      where: { id },
-    });
+    await deleteDoc(doc(db, "players", id));
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     return NextResponse.json({ error: "Impossible de supprimer le joueur." }, { status: 400 });

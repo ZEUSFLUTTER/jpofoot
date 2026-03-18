@@ -1,81 +1,70 @@
-import { EventType } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/firebase";
+import { doc, runTransaction, Timestamp, increment } from "firebase/firestore";
+import { EventType } from "@/lib/types";
 
 type Context = { params: Promise<{ id: string; eventId: string }> };
 
 export async function DELETE(request: Request, context: Context) {
   const { id: matchId, eventId } = await context.params;
 
-  const event = await prisma.matchEvent.findUnique({
-    where: { id: eventId },
-    include: {
-      match: {
-        include: {
-          teamA: { include: { players: true } },
-          teamB: { include: { players: true } },
-        },
-      },
-    },
-  });
+  try {
+    const result = await runTransaction(db, async (transaction) => {
+      const matchRef = doc(db, "matches", matchId);
+      const eventRef = doc(db, "matches", matchId, "events", eventId);
+      
+      const [matchSnap, eventSnap] = await Promise.all([
+        transaction.get(matchRef),
+        transaction.get(eventRef)
+      ]);
 
-  if (!event) {
-    return NextResponse.json({ error: "Événement introuvable" }, { status: 404 });
-  }
+      if (!matchSnap.exists()) throw new Error("Match introuvable");
+      if (!eventSnap.exists()) throw new Error("Événement introuvable");
 
-  if (event.match.status === "FINI") {
-    return NextResponse.json({ error: "Impossible de modifier un match terminé et validé." }, { status: 400 });
-  }
+      const match = matchSnap.data();
+      const event = eventSnap.data();
 
-  const scorerIsTeamA = event.match.teamA.players.some((player) => player.id === event.playerId);
+      if (match.status === "FINI") {
+        throw new Error("Impossible de modifier un match terminé et validé.");
+      }
 
-  const result = await prisma.$transaction(async (tx) => {
-    if (event.type === EventType.GOAL) {
-      await tx.match.update({
-        where: { id: matchId },
-        data: scorerIsTeamA ? { scoreA: { decrement: 1 } } : { scoreB: { decrement: 1 } },
-      });
+      // Update Player Stats
+      const playerRef = doc(db, "players", event.playerId);
+      const playerUpdate: any = { "stats.updatedAt": Timestamp.now() };
 
-      await tx.playerStat.update({
-        where: { playerId: event.playerId },
-        data: { goals: { decrement: 1 } },
-      });
+      if (event.type === EventType.GOAL) playerUpdate["stats.goals"] = increment(-1);
+      if (event.type === EventType.YELLOW) playerUpdate["stats.yellowCards"] = increment(-1);
+      if (event.type === EventType.RED) playerUpdate["stats.redCards"] = increment(-1);
+
+      transaction.update(playerRef, playerUpdate);
 
       if (event.relatedToId) {
-        await tx.playerStat.update({
-          where: { playerId: event.relatedToId },
-          data: { assists: { decrement: 1 } },
+        const assistRef = doc(db, "players", event.relatedToId);
+        transaction.update(assistRef, {
+          "stats.assists": increment(-1),
+          "stats.updatedAt": Timestamp.now()
         });
       }
-    }
 
-    if (event.type === EventType.ASSIST) {
-      await tx.playerStat.update({
-        where: { playerId: event.playerId },
-        data: { assists: { decrement: 1 } },
-      });
-    }
+      // Update Match Score if Goal
+      if (event.type === EventType.GOAL) {
+        const playerSnap = await transaction.get(playerRef);
+        const player = playerSnap.data();
+        if (!player) throw new Error("Joueur introuvable lors de la mise à jour du score");
+        const isTeamA = player.teamId === match.teamAId;
+        
+        transaction.update(matchRef, {
+          [isTeamA ? "scoreA" : "scoreB"]: increment(-1)
+        });
+      }
 
-    if (event.type === EventType.YELLOW) {
-      await tx.playerStat.update({
-        where: { playerId: event.playerId },
-        data: { yellowCards: { decrement: 1 } },
-      });
-    }
+      transaction.delete(eventRef);
 
-    if (event.type === EventType.RED) {
-      await tx.playerStat.update({
-        where: { playerId: event.playerId },
-        data: { redCards: { decrement: 1 } },
-      });
-    }
-
-    await tx.matchEvent.delete({
-      where: { id: eventId },
+      return { success: true };
     });
 
-    return { success: true };
-  });
-
-  return NextResponse.json(result);
+    return NextResponse.json(result);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
 }

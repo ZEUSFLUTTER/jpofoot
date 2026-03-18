@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 interface MatchHeaderProps {
-  match: any; // Type this properly if possible, or use the inferred type from Prisma
+  match: any; // Type this properly if possible, or use the inferred type from Firestore
 }
 
 export function MatchHeader({ match }: MatchHeaderProps) {

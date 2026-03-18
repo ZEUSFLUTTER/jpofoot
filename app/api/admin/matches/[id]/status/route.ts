@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/firebase";
+import { doc, getDoc, updateDoc, Timestamp } from "firebase/firestore";
 import { updateStatusSchema } from "@/lib/validators";
+import { MatchStatus } from "@/lib/types";
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -13,32 +15,35 @@ export async function PATCH(request: Request, context: Context) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const match = await prisma.match.findUnique({
-    where: { id },
-    select: { status: true, date: true },
-  });
+  const matchRef = doc(db, "matches", id);
+  const matchSnap = await getDoc(matchRef);
 
-  if (!match) {
+  if (!matchSnap.exists()) {
     return NextResponse.json({ error: "Match introuvable" }, { status: 404 });
   }
 
-  if (match.status === "FINI") {
+  const match = matchSnap.data();
+
+  if (match.status === MatchStatus.FINI) {
     return NextResponse.json({ error: "Ce match est déjà terminé et validé." }, { status: 400 });
   }
 
-  if (parsed.data.status === "LIVE") {
-    if (new Date(match.date) > new Date()) {
+  if (parsed.data.status === MatchStatus.LIVE) {
+    const matchDate = match.date instanceof Timestamp ? match.date.toDate() : new Date(match.date);
+    if (matchDate > new Date()) {
       return NextResponse.json({ error: "Le match ne peut pas être lancé avant l'heure prévue." }, { status: 400 });
     }
   }
 
-  const updated = await prisma.match.update({
-    where: { id },
-    data: {
-      status: parsed.data.status,
-      liveMinute: parsed.data.liveMinute ?? undefined,
-    },
-  });
+  const updateData: any = {
+    status: parsed.data.status,
+  };
+  
+  if (parsed.data.liveMinute !== undefined) {
+    updateData.liveMinute = parsed.data.liveMinute;
+  }
 
-  return NextResponse.json(updated);
+  await updateDoc(matchRef, updateData);
+
+  return NextResponse.json({ id, ...match, ...updateData });
 }

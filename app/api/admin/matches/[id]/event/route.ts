@@ -1,7 +1,19 @@
-import { EventType, MatchStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/firebase";
+import { 
+  doc, 
+  getDoc, 
+  addDoc, 
+  collection, 
+  runTransaction, 
+  Timestamp,
+  increment,
+  query,
+  where,
+  getDocs
+} from "firebase/firestore";
 import { createEventSchema } from "@/lib/validators";
+import { EventType, MatchStatus } from "@/lib/types";
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -14,106 +26,81 @@ export async function POST(request: Request, context: Context) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const match = await prisma.match.findUnique({
-    where: { id },
-    include: {
-      teamA: { include: { players: true } },
-      teamB: { include: { players: true } },
-    },
-  });
+  try {
+    const result = await runTransaction(db, async (transaction) => {
+      const matchRef = doc(db, "matches", id);
+      const matchSnap = await transaction.get(matchRef);
 
-  if (!match) {
-    return NextResponse.json({ error: "Match introuvable" }, { status: 404 });
-  }
+      if (!matchSnap.exists()) {
+        throw new Error("Match introuvable");
+      }
 
-  if (match.status !== MatchStatus.LIVE) {
-    return NextResponse.json({ error: "Le match doit être en direct pour ajouter un événement" }, { status: 400 });
-  }
+      const match = matchSnap.data();
 
-  const teamPlayerIds = new Set([
-    ...match.teamA.players.map((player) => player.id),
-    ...match.teamB.players.map((player) => player.id),
-  ]);
+      if (match.status !== MatchStatus.LIVE) {
+        throw new Error("Le match doit être en direct pour ajouter un événement");
+      }
 
-  if (!teamPlayerIds.has(parsed.data.playerId)) {
-    return NextResponse.json({ error: "Le joueur sélectionné ne fait pas partie de ce match" }, { status: 400 });
-  }
+      // Check if teamA and teamB IDs match the player's team (we'll fetch players)
+      const playerRef = doc(db, "players", parsed.data.playerId);
+      const playerSnap = await transaction.get(playerRef);
+      if (!playerSnap.exists()) throw new Error("Joueur introuvable");
+      
+      const player = playerSnap.data();
+      if (player.teamId !== match.teamAId && player.teamId !== match.teamBId) {
+        throw new Error("Le joueur sélectionné ne fait pas partie de ce match");
+      }
 
-  if (parsed.data.relatedToId && !teamPlayerIds.has(parsed.data.relatedToId)) {
-    return NextResponse.json({ error: "Le passeur sélectionné ne fait pas partie de ce match" }, { status: 400 });
-  }
+      const scorerIsTeamA = player.teamId === match.teamAId;
 
-  const scorerIsTeamA = match.teamA.players.some((player) => player.id === parsed.data.playerId);
-
-  const result = await prisma.$transaction(async (tx) => {
-    const event = await tx.matchEvent.create({
-      data: {
-        matchId: id,
+      // Event creation (addDoc doesn't work in transactions, need to use doc(collection()))
+      const eventRef = doc(collection(db, "matches", id, "events"));
+      const eventData = {
         playerId: parsed.data.playerId,
         minute: parsed.data.minute,
         type: parsed.data.type,
         relatedToId: parsed.data.relatedToId || null,
-      },
-      include: {
-        player: true,
-        relatedTo: true,
-      },
-    });
+        createdAt: Timestamp.now(),
+      };
+      
+      transaction.set(eventRef, eventData);
 
-    if (parsed.data.type === EventType.GOAL) {
-      await tx.match.update({
-        where: { id },
-        data: scorerIsTeamA ? { scoreA: { increment: 1 } } : { scoreB: { increment: 1 } },
-      });
+      // Update Match
+      const matchUpdate: any = { liveMinute: parsed.data.minute };
+      if (parsed.data.type === EventType.GOAL) {
+        if (scorerIsTeamA) {
+          matchUpdate.scoreA = increment(1);
+        } else {
+          matchUpdate.scoreB = increment(1);
+        }
+      }
+      transaction.update(matchRef, matchUpdate);
 
-      await tx.playerStat.upsert({
-        where: { playerId: parsed.data.playerId },
-        create: { playerId: parsed.data.playerId, goals: 1 },
-        update: { goals: { increment: 1 } },
-      });
+      // Update Player Stats
+      const playerUpdate: any = { 
+        "stats.updatedAt": Timestamp.now() 
+      };
+      
+      if (parsed.data.type === EventType.GOAL) playerUpdate["stats.goals"] = increment(1);
+      if (parsed.data.type === EventType.YELLOW) playerUpdate["stats.yellowCards"] = increment(1);
+      if (parsed.data.type === EventType.RED) playerUpdate["stats.redCards"] = increment(1);
+      
+      transaction.update(playerRef, playerUpdate);
 
+      // Update assistant stats if applicable
       if (parsed.data.relatedToId) {
-        await tx.playerStat.upsert({
-          where: { playerId: parsed.data.relatedToId },
-          create: { playerId: parsed.data.relatedToId, assists: 1 },
-          update: { assists: { increment: 1 } },
+        const assistRef = doc(db, "players", parsed.data.relatedToId);
+        transaction.update(assistRef, {
+          "stats.assists": increment(1),
+          "stats.updatedAt": Timestamp.now()
         });
       }
-    }
 
-    if (parsed.data.type === EventType.ASSIST) {
-      await tx.playerStat.upsert({
-        where: { playerId: parsed.data.playerId },
-        create: { playerId: parsed.data.playerId, assists: 1 },
-        update: { assists: { increment: 1 } },
-      });
-    }
-
-    if (parsed.data.type === EventType.YELLOW) {
-      await tx.playerStat.upsert({
-        where: { playerId: parsed.data.playerId },
-        create: { playerId: parsed.data.playerId, yellowCards: 1 },
-        update: { yellowCards: { increment: 1 } },
-      });
-    }
-
-    if (parsed.data.type === EventType.RED) {
-      await tx.playerStat.upsert({
-        where: { playerId: parsed.data.playerId },
-        create: { playerId: parsed.data.playerId, redCards: 1 },
-        update: { redCards: { increment: 1 } },
-      });
-    }
-
-    await tx.match.update({
-      where: { id },
-      data: {
-        liveMinute: parsed.data.minute,
-      },
+      return { id: eventRef.id, ...eventData };
     });
 
-    return event;
-  });
-
-  return NextResponse.json(result, { status: 201 });
+    return NextResponse.json(result, { status: 201 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
 }

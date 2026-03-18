@@ -1,4 +1,4 @@
-import { EventType, MatchStatus } from "@prisma/client";
+import { EventType, MatchStatus } from "./types";
 import { z } from "zod";
 
 export const createTeamSchema = z.object({
