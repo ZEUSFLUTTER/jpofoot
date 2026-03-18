@@ -15,6 +15,7 @@ import { MatchStatus } from "@/lib/types";
 export type StandingRow = {
   teamId: string;
   teamName: string;
+  logoUrl?: string | null;
   points: number;
   played: number;
   wins: number;
@@ -104,8 +105,16 @@ export async function getDashboardData() {
       status: data.status || MatchStatus.PREVU,
       liveMinute: data.liveMinute || 0,
       date: matchDate,
-      teamA: { id: teamA?.id || data.teamAId, name: teamA?.name || "Équipe A" },
-      teamB: { id: teamB?.id || data.teamBId, name: teamB?.name || "Équipe B" },
+      teamA: {
+        id: teamA?.id || data.teamAId,
+        name: teamA?.name || "Équipe A",
+        logoUrl: teamA?.logoUrl || null,
+      },
+      teamB: {
+        id: teamB?.id || data.teamBId,
+        name: teamB?.name || "Équipe B",
+        logoUrl: teamB?.logoUrl || null,
+      },
       events: [] as any[]
     };
   });
@@ -371,8 +380,8 @@ function computeStandings(
       continue;
     }
 
-    ensureRow(rows, match.teamAId, match.teamA.name);
-    ensureRow(rows, match.teamBId, match.teamB.name);
+    ensureRow(rows, match.teamAId, match.teamA.name, match.teamA.logoUrl);
+    ensureRow(rows, match.teamBId, match.teamB.name, match.teamB.logoUrl);
 
     const teamA = rows.get(match.teamAId)!;
     const teamB = rows.get(match.teamBId)!;
@@ -428,11 +437,17 @@ function computeStandings(
     });
 }
 
-function ensureRow(rows: Map<string, StandingRow>, teamId: string, teamName: string) {
+function ensureRow(
+  rows: Map<string, StandingRow>,
+  teamId: string,
+  teamName: string,
+  logoUrl?: string | null,
+) {
   if (!rows.has(teamId)) {
     rows.set(teamId, {
       teamId,
       teamName,
+      logoUrl: logoUrl ?? null,
       points: 0,
       played: 0,
       wins: 0,

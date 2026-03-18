@@ -369,348 +369,292 @@ export function AdminPanel({ teams, matches }: Props) {
   }
 
   return (
-    <section className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5 shadow-lg shadow-cyan-500/10">
-      <h2 className="text-xl font-semibold text-cyan-300">IAI Inter-Classe Master</h2>
-      <p className="mt-1 text-sm text-zinc-400">Administration du tournoi et feuille de match numérique.</p>
-      {message ? (
-        <div className="mt-3 rounded-lg bg-zinc-900 border border-zinc-800 p-3 flex justify-between items-center">
-          <p className="text-sm text-cyan-200">{message}</p>
-          <button onClick={() => setMessage("")} className="text-zinc-500 hover:text-white">✕</button>
+    <section className="rounded-[2.5rem] border border-zinc-800 bg-zinc-950/80 p-8 shadow-2xl shadow-cyan-500/5 backdrop-blur-xl font-sans">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+          <h2 className="text-3xl font-black uppercase italic tracking-tighter text-cyan-300">Portail Administration</h2>
+          <p className="mt-1 text-sm font-medium text-zinc-500 uppercase tracking-widest">Gestion du tournoi et feuille de match numérique.</p>
         </div>
-      ) : null}
+        {message && (
+          <div className="rounded-2xl bg-cyan-500/10 border border-cyan-500/20 px-6 py-3 flex items-center gap-4 animate-in fade-in slide-in-from-top-4">
+            <p className="text-sm font-black uppercase tracking-widest text-cyan-400">{message}</p>
+            <button onClick={() => setMessage("")} className="text-zinc-500 hover:text-white transition-colors">✕</button>
+          </div>
+        )}
+      </div>
       
-      <div className="mt-5 grid gap-6 md:grid-cols-2">
-        {/* Gestion des Équipes */}
-        <div className="space-y-4">
-          <form
-            className="space-y-2 rounded-xl border border-zinc-800 bg-zinc-900 p-4"
-            action={(formData) => startTransition(() => handleCreateTeam(formData))}
-          >
-            <h3 className="font-medium text-zinc-100">Créer une équipe</h3>
-            <input name="name" required placeholder="Ex: Terminale C4" className="w-full rounded bg-zinc-800 p-2 text-sm text-white" />
-            <div className="grid grid-cols-2 gap-2">
-              <input name="coachFirstName" required placeholder="Prénom du Coach" className="rounded bg-zinc-800 p-2 text-sm text-white" />
-              <input name="coachLastName" required placeholder="Nom du Coach" className="rounded bg-zinc-800 p-2 text-sm text-white" />
-            </div>
-            <input name="colors" placeholder="Couleurs (Bleu / Blanc)" className="w-full rounded bg-zinc-800 p-2 text-sm text-white" />
-            <div className="space-y-1">
-              <label className="text-[10px] text-zinc-500 uppercase font-bold">Logo de l'équipe</label>
-              <input name="logoFile" type="file" accept="image/*" className="w-full text-xs text-zinc-400 file:mr-4 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-cyan-400 hover:file:bg-zinc-700" />
-            </div>
-            <button disabled={isPending || isUploading} className="w-full rounded bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-700 transition-colors disabled:opacity-50">
-              {isUploading ? "Téléchargement..." : "Enregistrer l'équipe"}
-            </button>
-          </form>
-
-          {editingTeam && (
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
+        {/* Teams & Players management column */}
+        <div className="space-y-8">
+          {/* Creation Forms */}
+          <div className="grid gap-6 sm:grid-cols-2">
             <form
-              className="space-y-2 rounded-xl border border-cyan-500/50 bg-zinc-900 p-4"
-              action={(formData) => startTransition(() => handleUpdateTeam(formData))}
+              className="space-y-4 rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6"
+              action={(formData) => startTransition(() => handleCreateTeam(formData))}
             >
-              <div className="flex justify-between items-center">
-                <h3 className="font-medium text-cyan-300">Modifier l'équipe</h3>
-                <button type="button" onClick={() => setEditingTeam(null)} className="text-zinc-500 hover:text-white">Annuler</button>
-              </div>
-              <input name="name" required defaultValue={editingTeam.name} placeholder="Ex: Terminale C4" className="w-full rounded bg-zinc-800 p-2 text-sm text-white" />
+              <h3 className="text-lg font-black uppercase italic tracking-tighter text-white">Créer une équipe</h3>
+              <input name="name" required placeholder="Nom de l'équipe" className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 text-sm text-white focus:border-cyan-500 outline-none transition-all placeholder:text-zinc-700" />
               <div className="grid grid-cols-2 gap-2">
-                <input name="coachFirstName" required defaultValue={editingTeam.coachFirstName} placeholder="Prénom du Coach" className="rounded bg-zinc-800 p-2 text-sm text-white" />
-                <input name="coachLastName" required defaultValue={editingTeam.coachLastName} placeholder="Nom du Coach" className="rounded bg-zinc-800 p-2 text-sm text-white" />
+                <input name="coachFirstName" required placeholder="Prénom Coach" className="rounded-xl bg-zinc-950 border border-zinc-800 p-3 text-sm text-white focus:border-cyan-500 outline-none transition-all placeholder:text-zinc-700" />
+                <input name="coachLastName" required placeholder="Nom Coach" className="rounded-xl bg-zinc-950 border border-zinc-800 p-3 text-sm text-white focus:border-cyan-500 outline-none transition-all placeholder:text-zinc-700" />
               </div>
-              <input name="colors" defaultValue={editingTeam.colors || ""} placeholder="Couleurs (Bleu / Blanc)" className="w-full rounded bg-zinc-800 p-2 text-sm text-white" />
-              <div className="space-y-1">
-                <label className="text-[10px] text-zinc-500 uppercase font-bold">Logo de l'équipe (laisser vide pour garder l'ancien)</label>
-                <input name="logoFile" type="file" accept="image/*" className="w-full text-xs text-zinc-400 file:mr-4 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-cyan-400 hover:file:bg-zinc-700" />
-              </div>
-              <button disabled={isPending || isUploading} className="w-full rounded bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-700 transition-colors disabled:opacity-50">
-                {isUploading ? "Téléchargement..." : "Enregistrer les modifications"}
+              <button disabled={isPending || isUploading} className="w-full rounded-xl bg-cyan-600 px-4 py-3 text-xs font-black uppercase tracking-widest text-white hover:bg-cyan-500 transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 active:scale-95">
+                {isUploading ? "Téléchargement..." : "Créer l'équipe"}
               </button>
             </form>
-          )}
 
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-            <h3 className="font-medium text-zinc-100 mb-2">Équipes existantes</h3>
-            <div className="max-h-40 overflow-auto space-y-1">
-              {teams.map(team => (
-                <div key={team.id} className="flex justify-between items-center bg-zinc-800/50 p-2 rounded text-sm">
-                  <span>{team.name} ({team.players.length} j.) - <small className="text-zinc-500 italic">Coach: {team.coachFirstName} {team.coachLastName}</small></span>
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => setEditingTeam(team)}
-                      className="text-cyan-400 hover:text-cyan-300 text-xs"
-                    >
-                      Modifier
-                    </button>
-                    <button 
-                      onClick={() => startTransition(() => handleDeleteTeam(team.id))}
-                      className="text-rose-400 hover:text-rose-300 text-xs"
-                    >
-                      Supprimer
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Gestion des Joueurs */}
-        <form
-          className="space-y-2 rounded-xl border border-zinc-800 bg-zinc-900 p-4"
-          action={(formData) => startTransition(() => handleCreatePlayer(formData))}
-        >
-          <h3 className="font-medium text-zinc-100">Ajouter un joueur</h3>
-          <select
-            className="w-full rounded bg-zinc-800 p-2 text-sm text-white"
-            value={selectedTeam}
-            onChange={(event) => setSelectedTeam(event.target.value)}
-          >
-            <option value="">Sélectionner une équipe</option>
-            {teams.map((team) => (
-              <option key={team.id} value={team.id}>
-                {team.name}
-              </option>
-            ))}
-          </select>
-          <div className="grid grid-cols-2 gap-2">
-            <input name="firstName" required placeholder="Prénom" className="rounded bg-zinc-800 p-2 text-sm text-white" />
-            <input name="lastName" required placeholder="Nom" className="rounded bg-zinc-800 p-2 text-sm text-white" />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <input name="number" type="number" required placeholder="Numéro" className="rounded bg-zinc-800 p-2 text-sm text-white" />
-            <select name="position" className="rounded bg-zinc-800 p-2 text-sm text-zinc-300">
-              <option value="">Choisir un poste</option>
-              {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] text-zinc-500 uppercase font-bold">Photo du joueur</label>
-            <input name="photoFile" type="file" accept="image/*" className="w-full text-xs text-zinc-400 file:mr-4 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-cyan-400 hover:file:bg-zinc-700" />
-          </div>
-          <button disabled={isPending || !selectedTeam || isUploading} className="w-full rounded bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-700 transition-colors disabled:opacity-50">
-            {isUploading ? "Téléchargement..." : "Ajouter au club"}
-          </button>
-          
-          {editingPlayer && (
-            <div className="space-y-2 mt-4 pt-4 border-t border-zinc-800">
-              <div className="flex justify-between items-center">
-                <h3 className="font-medium text-cyan-300 text-sm">Modifier le joueur</h3>
-                <button type="button" onClick={() => setEditingPlayer(null)} className="text-zinc-500 hover:text-white text-xs">Annuler</button>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <input name="edit_firstName" required defaultValue={editingPlayer.firstName} placeholder="Prénom" className="rounded bg-zinc-800 p-2 text-sm text-white" id="edit_p_fname" />
-                <input name="edit_lastName" required defaultValue={editingPlayer.lastName} placeholder="Nom" className="rounded bg-zinc-800 p-2 text-sm text-white" id="edit_p_lname" />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <input name="edit_number" type="number" required defaultValue={editingPlayer.number} placeholder="Numéro" className="rounded bg-zinc-800 p-2 text-sm text-white" id="edit_p_num" />
-                <select name="edit_position" defaultValue={editingPlayer.position || ""} className="rounded bg-zinc-800 p-2 text-sm text-zinc-300" id="edit_p_pos">
-                  <option value="">Choisir un poste</option>
-                  {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] text-zinc-500 uppercase font-bold">Photo (laisser vide pour garder)</label>
-                <input name="edit_photoFile" type="file" accept="image/*" className="w-full text-xs text-zinc-400 file:mr-4 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-cyan-400 hover:file:bg-zinc-700" id="edit_p_photo" />
-              </div>
-              <button 
-                type="button"
-                onClick={() => {
-                  const formData = new FormData();
-                  formData.append("firstName", (document.getElementById("edit_p_fname") as HTMLInputElement).value);
-                  formData.append("lastName", (document.getElementById("edit_p_lname") as HTMLInputElement).value);
-                  formData.append("number", (document.getElementById("edit_p_num") as HTMLInputElement).value);
-                  formData.append("position", (document.getElementById("edit_p_pos") as HTMLSelectElement).value);
-                  const file = (document.getElementById("edit_p_photo") as HTMLInputElement).files?.[0];
-                  if (file) formData.append("photoFile", file);
-                  startTransition(() => handleUpdatePlayer(formData));
-                }}
-                disabled={isPending || isUploading} 
-                className="w-full rounded bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-700 transition-colors disabled:opacity-50"
+            <form
+              className="space-y-4 rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6"
+              action={(formData) => startTransition(() => handleCreatePlayer(formData))}
+            >
+              <h3 className="text-lg font-black uppercase italic tracking-tighter text-white">Ajouter un joueur</h3>
+              <select
+                className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 text-sm text-white focus:border-cyan-500 outline-none appearance-none"
+                value={selectedTeam}
+                onChange={(event) => setSelectedTeam(event.target.value)}
               >
-                {isUploading ? "Téléchargement..." : "Sauvegarder"}
-              </button>
-            </div>
-          )}
-          
-          <div className="mt-3">
-            <h4 className="text-xs font-semibold text-zinc-500 uppercase mb-1">Effectif actuel</h4>
-            <div className="max-h-32 overflow-auto space-y-1">
-              {teamPlayers.map((player) => (
-                <div key={player.id} className="flex justify-between items-center group">
-                  <div className="flex items-center gap-2">
-                    {player.photoUrl && <img src={player.photoUrl} className="w-5 h-5 rounded-full object-cover" />}
-                    <span className="text-xs text-zinc-400">#{player.number} {player.firstName} {player.lastName}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => setEditingPlayer(player)}
-                      className="text-cyan-500/50 hover:text-cyan-500 text-[10px]"
-                      type="button"
-                    >
-                      Modifier
-                    </button>
-                    <button 
-                      onClick={() => startTransition(() => handleDeletePlayer(player.id))}
-                      className="text-rose-500/50 hover:text-rose-500 text-[10px]"
-                      type="button"
-                    >
-                      Retirer
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </form>
-
-        {/* Planification des Matchs */}
-        <div className="space-y-4">
-          <form
-            className="space-y-2 rounded-xl border border-zinc-800 bg-zinc-900 p-4"
-            action={(formData) => startTransition(() => handleCreateMatch(formData))}
-          >
-            <h3 className="font-medium text-zinc-100">Planifier un match</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <select name="teamAId" required className="w-full rounded bg-zinc-800 p-2 text-sm text-white">
-                <option value="">Équipe A</option>
+                <option value="">Sélectionner une équipe</option>
                 {teams.map((team) => (
                   <option key={team.id} value={team.id}>{team.name}</option>
                 ))}
               </select>
-              <select name="teamBId" required className="w-full rounded bg-zinc-800 p-2 text-sm text-white">
-                <option value="">Équipe B</option>
-                {teams.map((team) => (
-                  <option key={team.id} value={team.id}>{team.name}</option>
-                ))}
-              </select>
-            </div>
-            <input name="date" required type="datetime-local" className="w-full rounded bg-zinc-800 p-2 text-sm text-white" />
-            <button disabled={isPending} className="w-full rounded bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-700 transition-colors">
-              Ajouter au calendrier
-            </button>
-          </form>
+              <div className="grid grid-cols-2 gap-2">
+                <input name="firstName" required placeholder="Prénom" className="rounded-xl bg-zinc-950 border border-zinc-800 p-3 text-sm text-white focus:border-cyan-500 outline-none transition-all placeholder:text-zinc-700" />
+                <input name="lastName" required placeholder="Nom" className="rounded-xl bg-zinc-950 border border-zinc-800 p-3 text-sm text-white focus:border-cyan-500 outline-none transition-all placeholder:text-zinc-700" />
+              </div>
+              <button disabled={isPending || !selectedTeam || isUploading} className="w-full rounded-xl bg-emerald-600 px-4 py-3 text-xs font-black uppercase tracking-widest text-white hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 active:scale-95">
+                {isUploading ? "Téléchargement..." : "Ajouter au club"}
+              </button>
+            </form>
+          </div>
 
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-            <h3 className="font-medium text-zinc-100 mb-2">Matchs programmés</h3>
-            <div className="max-h-40 overflow-auto space-y-1 text-sm">
-              {matches.map(match => (
-                <div key={match.id} className="flex justify-between items-center bg-zinc-800/50 p-2 rounded">
-                  <span className={`text-xs ${match.status === MatchStatus.LIVE ? "text-cyan-400" : match.status === MatchStatus.FINI ? "text-zinc-500" : ""}`}>
-                    {match.teamA.name} vs {match.teamB.name} {match.status === MatchStatus.FINI ? "(Terminé)" : ""}
-                  </span>
-                  <button 
-                    onClick={() => startTransition(() => handleDeleteMatch(match.id))}
-                    className="text-rose-400 hover:text-rose-300 text-[10px]"
-                    type="button"
-                  >
-                    Supprimer
-                  </button>
-                </div>
-              ))}
+          {/* List & Edit Area */}
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-900/30 p-6">
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500 mb-4">Parcourir les clubs</h3>
+              <div className="max-h-[300px] overflow-auto space-y-2 pr-2 custom-scrollbar">
+                {teams.map(team => (
+                  <div key={team.id} className="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl hover:border-cyan-500/30 transition-all group">
+                    <div>
+                      <p className="font-black text-white uppercase text-xs tracking-tight">{team.name}</p>
+                      <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest italic">{team.coachFirstName} {team.coachLastName}</p>
+                    </div>
+                    <div className="flex gap-3">
+                       <button onClick={() => setEditingTeam(team)} className="text-[10px] font-black uppercase text-cyan-500 hover:text-cyan-400 transition-colors">Éditer</button>
+                       <button onClick={() => startTransition(() => handleDeleteTeam(team.id))} className="text-[10px] font-black uppercase text-rose-500 hover:text-rose-400 transition-colors">Suppr.</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-900/30 p-6">
+              <div className="flex justify-between items-center mb-4">
+                 <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">Liste des joueurs</h3>
+                 <span className="text-[10px] font-black text-cyan-500/50 uppercase">{teamPlayers.length} j.</span>
+              </div>
+              <div className="max-h-[300px] overflow-auto space-y-2 pr-2 custom-scrollbar">
+                {teamPlayers.length === 0 ? (
+                  <p className="text-center py-10 text-[10px] font-black text-zinc-600 uppercase tracking-widest">Aucune équipe sélectionnée</p>
+                ) : (
+                  teamPlayers.map((player) => (
+                    <div key={player.id} className="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl group hover:border-emerald-500/30 transition-all">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-black italic text-zinc-800 group-hover:text-emerald-500/50 transition-colors tabular-nums">#{player.number}</span>
+                        <div>
+                           <p className="font-black text-white uppercase text-xs tracking-tight">{player.firstName} {player.lastName}</p>
+                           <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{player.position || "Non assigné"}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                         <button onClick={() => setEditingPlayer(player)} className="text-[10px] font-black uppercase text-emerald-500 hover:text-emerald-400 transition-colors">Éditer</button>
+                         <button onClick={() => startTransition(() => handleDeletePlayer(player.id))} className="text-[10px] font-black uppercase text-rose-500 hover:text-rose-400 transition-colors">Virer</button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Feuille de Match (CRUD Événements) */}
-        <div className="space-y-2 rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-          <h3 className="font-medium text-zinc-100">Feuille de match dynamique</h3>
-          <select
-            value={selectedMatch}
-            onChange={(event) => setSelectedMatch(event.target.value)}
-            className="w-full rounded bg-zinc-800 p-2 text-sm border-cyan-500/30 border text-white"
-          >
-            {matches.map((match) => (
-              <option key={match.id} value={match.id}>
-                {match.teamA.name} - {match.teamB.name} ({new Date(match.date).toLocaleDateString()}) {match.status === MatchStatus.FINI ? "🏁" : ""}
-              </option>
-            ))}
-          </select>
-          
-          {isFinished && (
-            <div className="rounded-lg bg-cyan-500/10 border border-cyan-500/20 p-2 text-center">
-              <span className="text-cyan-400 font-bold text-xs uppercase tracking-widest">Match Terminé & Validé</span>
-            </div>
-          )}
-
-          {!isFinished && (
-            <div className="flex gap-2">
-              <button
-                disabled={isPending || !selectedMatch || (selectedMatchData && new Date(selectedMatchData.date) > new Date())}
-                onClick={() => startTransition(() => handleUpdateStatus(MatchStatus.LIVE))}
-                className="flex-1 rounded bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
-                type="button"
+        {/* Match Control Column */}
+        <div className="space-y-8">
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900/50 p-8 shadow-xl">
+             <div className="flex items-center gap-4 mb-6">
+                <div className="h-4 w-4 rounded-full bg-cyan-500 animate-pulse shadow-lg shadow-cyan-500/50" />
+                <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white">Contrôle de Match</h3>
+             </div>
+             
+             <select
+                value={selectedMatch}
+                onChange={(event) => setSelectedMatch(event.target.value)}
+                className="w-full rounded-2xl bg-zinc-950 border-2 border-cyan-500/20 p-4 text-sm font-black uppercase tracking-widest text-white focus:border-cyan-500 outline-none mb-6 relative z-10"
               >
-                Lancer le Match
-              </button>
-              <button
-                disabled={isPending || !selectedMatch}
-                onClick={() => startTransition(() => handleUpdateStatus(MatchStatus.PREVU))}
-                className="flex-1 rounded bg-amber-600 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-700"
-                type="button"
-              >
-                Pause
-              </button>
-            </div>
-          )}
-          {selectedMatchData && new Date(selectedMatchData.date) > new Date() && (
-            <p className="text-[10px] text-zinc-500 italic">Le match ne peut être lancé qu'à partir du {new Date(selectedMatchData.date).toLocaleString()}</p>
-          )}
-
-          <form className="space-y-2 pt-2 border-t border-zinc-800" action={(formData) => startTransition(() => handleAddEvent(formData))}>
-            <div className="grid grid-cols-2 gap-2">
-              <select name="type" className="rounded bg-zinc-800 p-2 text-sm text-white">
-                {Object.values(EventType).map((type) => (
-                  <option key={type} value={type}>{type}</option>
+                {matches.map((match) => (
+                  <option key={match.id} value={match.id}>
+                    {match.teamA.name} VS {match.teamB.name} — {new Date(match.date).toLocaleDateString()}
+                  </option>
                 ))}
               </select>
-              <input name="minute" type="number" placeholder="Min" defaultValue={selectedMatchData?.liveMinute ?? 0} className="rounded bg-zinc-800 p-2 text-sm text-white" />
-            </div>
-            <select name="playerId" required className="w-full rounded bg-zinc-800 p-2 text-sm text-white">
-              <option value="">Joueur principal</option>
-              {playersForMatch.map((player) => (
-                <option key={player.id} value={player.id}>
-                  #{player.number} {player.firstName} {player.lastName}
-                </option>
-              ))}
-            </select>
-            <button disabled={isPending || !selectedMatch || selectedMatchData?.status !== MatchStatus.LIVE || isFinished} className="w-full rounded bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-700 transition-colors disabled:opacity-50">
-              Enregistrer l'action
-            </button>
-          </form>
 
-          {/* Liste des événements du match (DELETE) */}
-          <div className="mt-4 border-t border-zinc-800 pt-3">
-            <h4 className="text-xs font-semibold text-zinc-500 uppercase mb-2">Historique des actions</h4>
-            <div className="max-h-40 overflow-auto space-y-1">
-              {selectedMatchData?.events.map((event) => (
-                <div key={event.id} className="flex justify-between items-center text-xs bg-zinc-950 p-2 rounded">
-                  <span>{event.minute}&apos; <b>{event.type}</b> - {event.player.firstName} {event.player.lastName}</span>
-                  {!isFinished && (
-                    <button 
-                      onClick={() => startTransition(() => handleDeleteEvent(event.id))}
-                      className="text-rose-500 hover:text-rose-400"
-                      type="button"
+              {!isFinished ? (
+                 <div className="grid grid-cols-2 gap-4 mb-8">
+                    <button
+                      disabled={isPending || !selectedMatch || (selectedMatchData && new Date(selectedMatchData.date) > new Date())}
+                      onClick={() => startTransition(() => handleUpdateStatus(MatchStatus.LIVE))}
+                      className="rounded-2xl bg-emerald-600 px-6 py-4 text-xs font-black uppercase tracking-[0.2em] text-white hover:bg-emerald-500 shadow-xl shadow-emerald-600/20 transition-all active:scale-95 disabled:opacity-30"
                     >
-                      Supprimer
+                      Démarrer Live
                     </button>
-                  )}
+                    <button
+                      disabled={isPending || !selectedMatch}
+                      onClick={() => startTransition(() => handleUpdateStatus(MatchStatus.PREVU))}
+                      className="rounded-2xl bg-amber-600 px-6 py-4 text-xs font-black uppercase tracking-[0.2em] text-white hover:bg-amber-500 shadow-xl shadow-amber-600/20 transition-all active:scale-95 disabled:opacity-30"
+                    >
+                      Mettre en Pause
+                    </button>
+                 </div>
+              ) : (
+                <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-2xl text-center mb-8">
+                   <p className="text-emerald-400 font-black uppercase tracking-[0.3em] text-sm italic">Match Officiellement Terminé</p>
                 </div>
-              ))}
-            </div>
-          </div>
+              )}
 
-          <form className="space-y-2 pt-4" action={(formData) => startTransition(() => handleFinalize(formData))}>
-            <div className="grid grid-cols-2 gap-2">
-              <input name="scoreA" type="number" defaultValue={selectedMatchData?.scoreA ?? 0} disabled={isFinished} className="rounded bg-zinc-800 p-2 text-sm text-white disabled:opacity-50" />
-              <input name="scoreB" type="number" defaultValue={selectedMatchData?.scoreB ?? 0} disabled={isFinished} className="rounded bg-zinc-800 p-2 text-sm text-white disabled:opacity-50" />
-            </div>
-            {!isFinished && (
-              <button disabled={isPending || !selectedMatch} className="w-full rounded bg-rose-600 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-700">
-                Valider Score Final
-              </button>
-            )}
-          </form>
+              {/* Event Adding Form */}
+              <form className="space-y-4 pt-6 border-t border-zinc-800" action={(formData) => startTransition(() => handleAddEvent(formData))}>
+                 <div className="grid grid-cols-3 gap-3">
+                   <select name="type" className="col-span-2 rounded-xl bg-zinc-950 border border-zinc-800 p-3 text-xs font-bold uppercase text-white outline-none">
+                      {Object.values(EventType).map((type) => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                    <input name="minute" type="number" placeholder="Min" defaultValue={selectedMatchData?.liveMinute ?? 0} className="rounded-xl bg-zinc-950 border border-zinc-800 p-3 text-xs font-black text-white outline-none text-center" />
+                 </div>
+                 <select name="playerId" required className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 text-xs font-bold uppercase text-white outline-none">
+                  <option value="">Sélectionner l'acteur</option>
+                  {playersForMatch.map((player) => (
+                    <option key={player.id} value={player.id}>#{player.number} {player.firstName} {player.lastName}</option>
+                  ))}
+                 </select>
+                 <button disabled={isPending || !selectedMatch || selectedMatchData?.status !== MatchStatus.LIVE || isFinished} className="w-full rounded-2xl bg-cyan-600 px-6 py-4 text-xs font-black uppercase tracking-[0.2em] text-white hover:bg-cyan-500 shadow-xl shadow-cyan-600/20 transition-all active:scale-95 disabled:opacity-30">
+                    Enregistrer Action Live
+                 </button>
+              </form>
+
+              {/* Event List */}
+              <div className="mt-8 space-y-3">
+                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600">Flux des événements</h4>
+                <div className="max-h-[250px] overflow-auto space-y-2 custom-scrollbar pr-2">
+                   {selectedMatchData?.events.map((event) => (
+                     <div key={event.id} className="flex justify-between items-center text-[11px] bg-zinc-950 p-4 rounded-xl border border-zinc-900 group">
+                        <span className="font-bold text-zinc-300">
+                           <span className="text-cyan-500 mr-2 italic">{event.minute}&apos;</span>
+                           <b className="uppercase tracking-widest mr-1">{event.type}</b> — {event.player.firstName} {event.player.lastName}
+                        </span>
+                        {!isFinished && (
+                          <button onClick={() => startTransition(() => handleDeleteEvent(event.id))} className="text-rose-500 font-black opacity-0 group-hover:opacity-100 transition-opacity">EXCLURE</button>
+                        )}
+                     </div>
+                   ))}
+                </div>
+              </div>
+
+              {/* Score Validation */}
+              <form className="mt-10 pt-8 border-t border-zinc-800 space-y-4" action={(formData) => startTransition(() => handleFinalize(formData))}>
+                 <div className="flex items-center justify-center gap-6">
+                    <div className="text-center">
+                       <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-2">{selectedMatchData?.teamA.name}</p>
+                       <input name="scoreA" type="number" defaultValue={selectedMatchData?.scoreA ?? 0} disabled={isFinished} className="w-20 h-20 rounded-2xl bg-zinc-950 border-4 border-zinc-800 text-center text-3xl font-black text-white outline-none focus:border-cyan-500 transition-all" />
+                    </div>
+                    <span className="text-3xl font-light text-zinc-800">-</span>
+                    <div className="text-center">
+                       <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-2">{selectedMatchData?.teamB.name}</p>
+                       <input name="scoreB" type="number" defaultValue={selectedMatchData?.scoreB ?? 0} disabled={isFinished} className="w-20 h-20 rounded-2xl bg-zinc-950 border-4 border-zinc-800 text-center text-3xl font-black text-white outline-none focus:border-cyan-500 transition-all" />
+                    </div>
+                 </div>
+                 {!isFinished && (
+                    <button disabled={isPending || !selectedMatch} className="w-full rounded-3xl bg-rose-600 px-6 py-5 text-sm font-black uppercase tracking-[0.4em] text-white hover:bg-rose-500 shadow-2xl shadow-rose-600/30 transition-all active:scale-95">
+                       Clôturer & Valider Officiellement
+                    </button>
+                 )}
+              </form>
+          </div>
         </div>
       </div>
+
+      {/* Editing Overlays */}
+      {editingTeam && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
+           <form action={(formData) => startTransition(() => handleUpdateTeam(formData))} className="w-full max-w-lg bg-zinc-950 border border-cyan-500/30 p-10 rounded-[3rem] shadow-3xl space-y-6">
+              <div className="flex justify-between items-center mb-4">
+                 <h2 className="text-3xl font-black uppercase italic tracking-tighter text-white">Éditer le Club</h2>
+                 <button type="button" onClick={() => setEditingTeam(null)} className="text-zinc-500 hover:text-white transition-colors text-2xl">✕</button>
+              </div>
+              <div className="space-y-4">
+                 <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Appellation Officielle</label>
+                    <input name="name" required defaultValue={editingTeam.name} className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-4 text-white outline-none focus:border-cyan-500 transition-all" />
+                 </div>
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Prénom Coach</label>
+                       <input name="coachFirstName" required defaultValue={editingTeam.coachFirstName} className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-4 text-white outline-none focus:border-cyan-500 transition-all" />
+                    </div>
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Nom Coach</label>
+                       <input name="coachLastName" required defaultValue={editingTeam.coachLastName} className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-4 text-white outline-none focus:border-cyan-500 transition-all" />
+                    </div>
+                 </div>
+                 <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Couleurs Distinctives</label>
+                    <input name="colors" defaultValue={editingTeam.colors || ""} placeholder="Ex: Rouge & Or" className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-4 text-white outline-none focus:border-cyan-500 transition-all" />
+                 </div>
+              </div>
+              <button disabled={isPending || isUploading} className="w-full rounded-[2rem] bg-cyan-600 px-6 py-5 text-sm font-black uppercase tracking-[0.3em] text-white hover:bg-cyan-500 transition-all shadow-2xl shadow-cyan-600/40">
+                 Finaliser les Changements
+              </button>
+           </form>
+        </div>
+      )}
+
+      {editingPlayer && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
+           <form action={(formData) => startTransition(() => handleUpdatePlayer(formData))} className="w-full max-w-lg bg-zinc-950 border border-emerald-500/30 p-10 rounded-[3rem] shadow-3xl space-y-6">
+              <div className="flex justify-between items-center mb-4">
+                 <h2 className="text-3xl font-black uppercase italic tracking-tighter text-white">Éditer Profil</h2>
+                 <button type="button" onClick={() => setEditingPlayer(null)} className="text-zinc-500 hover:text-white transition-colors text-2xl">✕</button>
+              </div>
+              <div className="space-y-4">
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Prénom</label>
+                       <input name="firstName" required defaultValue={editingPlayer.firstName} className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-4 text-white outline-none focus:border-emerald-500 transition-all" />
+                    </div>
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Nom de Famille</label>
+                       <input name="lastName" required defaultValue={editingPlayer.lastName} className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-4 text-white outline-none focus:border-emerald-500 transition-all" />
+                    </div>
+                 </div>
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Dossard #</label>
+                       <input name="number" type="number" required defaultValue={editingPlayer.number} className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-4 text-white outline-none focus:border-emerald-500 transition-all" />
+                    </div>
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Position</label>
+                       <select name="position" defaultValue={editingPlayer.position || ""} className="w-full rounded-2xl bg-zinc-900 border border-zinc-800 p-4 text-white outline-none focus:border-emerald-500 appearance-none">
+                          {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
+                       </select>
+                    </div>
+                 </div>
+              </div>
+              <button disabled={isPending || isUploading} className="w-full rounded-[2rem] bg-emerald-600 px-6 py-5 text-sm font-black uppercase tracking-[0.3em] text-white hover:bg-emerald-500 transition-all shadow-2xl shadow-emerald-600/40">
+                 Confirmer Profil Joueur
+              </button>
+           </form>
+        </div>
+      )}
     </section>
   );
 }

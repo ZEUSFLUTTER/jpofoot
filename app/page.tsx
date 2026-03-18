@@ -1,4 +1,4 @@
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/types";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { AdminPanel } from "@/app/_components/admin-panel";
@@ -6,93 +6,163 @@ import { getDashboardData } from "@/lib/tournament";
 
 export const dynamic = "force-dynamic";
 
-function statusLabel(status: MatchStatus) {
-  if (status === MatchStatus.LIVE) return "En cours";
-  if (status === MatchStatus.PREVU) return "À venir";
-  return "Terminé";
+function StatusBadge({ status }: { status: MatchStatus }) {
+  if (status === MatchStatus.LIVE) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-rose-500 border border-rose-500/20">
+        <span className="h-2 w-2 animate-pulse rounded-full bg-rose-500" />
+        En direct
+      </span>
+    );
+  }
+  if (status === MatchStatus.PREVU) {
+    return (
+      <span className="rounded-full bg-zinc-800 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-400 border border-zinc-700">
+        À venir
+      </span>
+    );
+  }
+  return (
+    <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-500 border border-emerald-500/20">
+      Terminé
+    </span>
+  );
 }
 
 export default async function Home() {
   const data = await getDashboardData();
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-4 py-8 text-zinc-100 md:px-10">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
-        <header className="rounded-2xl border border-zinc-800 bg-gradient-to-r from-zinc-900 to-zinc-950 p-6 shadow-lg shadow-cyan-500/10">
-          <h1 className="text-3xl font-bold tracking-tight text-cyan-300">Inter-Classe Master</h1>
-          <p className="mt-2 text-sm text-zinc-400">
-            Suivi en temps réel des matchs, classements et statistiques individuelles.
-          </p>
+    <main className="min-h-screen bg-zinc-950 px-4 py-8 text-zinc-100 md:px-10 font-sans selection:bg-cyan-500/30">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-12">
+        {/* Header Section */}
+        <header className="relative flex flex-col items-center justify-between gap-6 rounded-[2rem] border border-zinc-800 bg-zinc-900/50 p-8 shadow-2xl shadow-cyan-500/5 backdrop-blur-xl overflow-hidden md:flex-row">
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-cyan-500/5 to-transparent pointer-events-none" />
+          <div className="relative z-10 text-center md:text-left">
+            <h1 className="text-2xl md:text-3xl font-bold text-white uppercase leading-tight">
+              Inter-Classe <span className="text-cyan-500">Master</span>
+            </h1>
+            <p className="mt-2 text-zinc-400 font-normal max-w-xl text-sm">
+              Vivez l'intensité du tournoi en direct. Scores, classements et performances individuelles en temps réel.
+            </p>
+          </div>
+          <div className="relative z-10 flex gap-3">
+             <div className="bg-zinc-950/50 p-3 rounded-xl border border-zinc-800 backdrop-blur-md text-center min-w-[90px]">
+                <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide mb-1">Équipes</p>
+                <p className="text-xl font-bold text-white">{data.teams.length}</p>
+             </div>
+             <div className="bg-zinc-950/50 p-3 rounded-xl border border-zinc-800 backdrop-blur-md text-center min-w-[90px]">
+                <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide mb-1">Matchs</p>
+                <p className="text-xl font-bold text-white">{data.allMatches.length}</p>
+             </div>
+          </div>
         </header>
 
-        <section className="grid gap-4 md:grid-cols-3">
+        {/* Live & Upcoming Matches */}
+        <section className="grid gap-8 lg:grid-cols-3">
           {[
-            { title: "En cours", matches: data.liveMatches },
-            { title: "À venir", matches: data.upcomingMatches },
-            { title: "Terminés", matches: data.finishedMatches },
+            { title: "En Direct", matches: data.liveMatches, accent: "rose" },
+            { title: "Prochains Matchs", matches: data.upcomingMatches, accent: "zinc" },
+            { title: "Résultats", matches: data.finishedMatches, accent: "emerald" },
           ].map((block) => (
-            <article key={block.title} className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
-              <h2 className="text-lg font-semibold text-cyan-200">{block.title}</h2>
-              <div className="mt-3 space-y-3">
-                {block.matches.length === 0 ? (
-                  <p className="text-sm text-zinc-500">Aucun match</p>
-                ) : (
-                  block.matches.map((match) => (
-                    <div key={match.id} className="rounded-lg border border-zinc-800 bg-zinc-950 p-3 text-sm">
-                      <p className="font-semibold">
-                        {match.teamA.name} {match.scoreA} - {match.scoreB} {match.teamB.name}
-                      </p>
-                      <p className="text-zinc-400">
-                        {format(new Date(match.date), "EEE d MMM yyyy, HH:mm", { locale: fr })} • {statusLabel(match.status)}
-                      </p>
-                      <div className="mt-2 space-y-1 text-xs text-zinc-400">
-                        {match.events
-                          .filter((event) => ["GOAL", "YELLOW", "RED"].includes(event.type))
-                          .slice(0, 4)
-                          .map((event) => (
-                            <p key={event.id}>
-                              {event.minute}&apos; {event.type} • {event.player.firstName} {event.player.lastName}
-                              {event.relatedTo ? ` (Passe: ${event.relatedTo.firstName} ${event.relatedTo.lastName})` : ""}
-                            </p>
-                          ))}
-                      </div>
+            <article key={block.title} className="flex flex-col rounded-2xl border border-zinc-800 bg-zinc-900/30 p-2 shadow-xl backdrop-blur-sm">
+              <div className="p-5">
+                <h2 className="text-base font-semibold uppercase text-white border-b border-zinc-800 pb-2 mb-3">
+                  {block.title}
+                </h2>
+                <div className="space-y-4">
+                  {block.matches.length === 0 ? (
+                    <div className="py-10 text-center">
+                      <p className="text-sm font-bold text-zinc-600 uppercase tracking-widest">Aucun match disponible</p>
                     </div>
-                  ))
-                )}
+                  ) : (
+                    block.matches.map((match) => (
+                      <div key={match.id} className="group relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-4 transition-all hover:border-cyan-500/50 hover:bg-zinc-900">
+                        <div className="mb-3 flex justify-between items-center">
+                           <StatusBadge status={match.status as MatchStatus} />
+                           <span className="text-[10px] font-medium text-zinc-500 tabular-nums">
+                              {format(new Date(match.date), "HH:mm")}
+                           </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="flex-1 text-center text-xs font-semibold uppercase truncate text-zinc-300">{match.teamA.name}</span>
+                          <div className="flex h-9 items-center justify-center rounded-lg bg-zinc-900 px-3 border border-zinc-800 group-hover:bg-cyan-500/10 group-hover:border-cyan-500/20 transition-colors">
+                            <span className="text-base font-bold tabular-nums">{match.scoreA} - {match.scoreB}</span>
+                          </div>
+                          <span className="flex-1 text-center text-xs font-semibold uppercase truncate text-zinc-300">{match.teamB.name}</span>
+                        </div>
+                        
+                        <div className="mt-3 flex flex-wrap gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                           {match.events.filter(e => e.type === "GOAL").slice(0, 3).map(e => (
+                             <span key={e.id} className="text-[9px] font-medium text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded capitalize">
+                               ⚽ {e.player.lastName} ({e.minute}')
+                             </span>
+                           ))}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </article>
           ))}
         </section>
 
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-          <h2 className="text-xl font-semibold text-cyan-300">Classement dynamique</h2>
-          <div className="mt-3 overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead className="text-zinc-400">
-                <tr>
-                  <th className="p-2">Équipe</th>
-                  <th className="p-2">Pts</th>
-                  <th className="p-2">J</th>
-                  <th className="p-2">V</th>
-                  <th className="p-2">N</th>
-                  <th className="p-2">D</th>
-                  <th className="p-2">BP</th>
-                  <th className="p-2">BC</th>
-                  <th className="p-2">Diff</th>
+        {/* Standings Table */}
+        <section className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-6 shadow-xl backdrop-blur-sm">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-5">
+            <h2 className="text-lg font-semibold uppercase text-white">Classement Général</h2>
+            <div className="flex gap-2">
+              <span className="h-2 w-2 rounded-full bg-cyan-500 shadow-lg shadow-cyan-500/50" />
+              <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wide">Calculé en temps réel</p>
+            </div>
+          </div>
+          <div className="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 shadow-inner">
+            <table className="min-w-full text-left">
+              <thead>
+                <tr className="bg-zinc-900/50 border-b border-zinc-800">
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">Rang</th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">Équipe</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500">Pts</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500">J</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500">V</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500">N</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500">D</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500">BP</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500">BC</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500">Diff</th>
                 </tr>
               </thead>
-              <tbody>
-                {data.standings.map((row) => (
-                  <tr key={row.teamId} className="border-t border-zinc-800">
-                    <td className="p-2">{row.teamName}</td>
-                    <td className="p-2 font-bold text-cyan-200">{row.points}</td>
-                    <td className="p-2">{row.played}</td>
-                    <td className="p-2">{row.wins}</td>
-                    <td className="p-2">{row.draws}</td>
-                    <td className="p-2">{row.losses}</td>
-                    <td className="p-2">{row.goalsFor}</td>
-                    <td className="p-2">{row.goalsAgainst}</td>
-                    <td className="p-2">{row.goalDiff}</td>
+              <tbody className="divide-y divide-zinc-800/50">
+                {data.standings.map((row, i) => (
+                  <tr key={row.teamId} className="hover:bg-zinc-900 transition-colors group">
+                    <td className="px-4 py-3">
+                       <span className={`flex h-6 w-6 items-center justify-center rounded text-xs font-semibold border ${i < 3 ? "bg-cyan-500/10 border-cyan-500/20 text-cyan-500" : "bg-zinc-900 border-zinc-800 text-zinc-500"}`}>
+                         {i + 1}
+                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                       <div className="flex items-center gap-2">
+                         <div className="h-6 w-6 rounded bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden">
+                           {row.logoUrl ? <img src={row.logoUrl} className="h-full w-full object-cover" /> : <span className="text-[9px] font-medium text-zinc-600">{row.teamName.charAt(0)}</span>}
+                         </div>
+                         <span className="text-sm font-semibold text-white group-hover:text-cyan-400 transition-colors">{row.teamName}</span>
+                       </div>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                       <span className="text-sm font-bold text-cyan-400 tabular-nums">{row.points}</span>
+                    </td>
+                    <td className="px-4 py-3 text-center text-sm font-medium text-zinc-400 tabular-nums">{row.played}</td>
+                    <td className="px-4 py-3 text-center text-sm font-medium text-zinc-300 tabular-nums">{row.wins}</td>
+                    <td className="px-4 py-3 text-center text-sm font-medium text-zinc-500 tabular-nums">{row.draws}</td>
+                    <td className="px-4 py-3 text-center text-sm font-medium text-zinc-500 tabular-nums">{row.losses}</td>
+                    <td className="px-4 py-3 text-center text-sm font-medium text-zinc-400 tabular-nums">{row.goalsFor}</td>
+                    <td className="px-4 py-3 text-center text-sm font-medium text-zinc-400 tabular-nums">{row.goalsAgainst}</td>
+                    <td className="px-4 py-3 text-center">
+                       <span className={`text-xs font-semibold tabular-nums ${row.goalDiff > 0 ? "text-emerald-400" : row.goalDiff < 0 ? "text-rose-400" : "text-zinc-500"}`}>
+                         {row.goalDiff > 0 ? `+${row.goalDiff}` : row.goalDiff}
+                       </span>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -100,65 +170,85 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="grid gap-4 md:grid-cols-3">
-          <article className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
-            <h2 className="text-lg font-semibold text-cyan-200">Top 10 Buteurs</h2>
-            <div className="mt-3 space-y-1 text-sm">
-              {data.topScorers.map((entry) => (
-                <p key={entry.playerId}>
-                  {entry.player.firstName} {entry.player.lastName} ({entry.player.team.name}) • {entry.goals}
-                </p>
-              ))}
-            </div>
-          </article>
+        {/* Individual Stats Grid */}
+        <div className="grid gap-6 md:grid-cols-3">
+          {[
+            { title: "Meilleurs Buteurs", items: data.topScorers, icon: "⚽", val: "goals", color: "text-emerald-400" },
+            { title: "Meilleurs Passeurs", items: data.topAssists, icon: "🎯", val: "assists", color: "text-cyan-400" },
+            { title: "Discipline", items: data.discipline, icon: "🟨", type: "cards" },
+          ].map((stat) => (
+            <section key={stat.title} className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-5 shadow-xl backdrop-blur-sm">
+              <h2 className="text-sm font-semibold uppercase text-white mb-4 flex items-center gap-2">
+                <span className="bg-zinc-800 p-1.5 rounded-lg border border-zinc-700 text-sm">{stat.icon}</span>
+                {stat.title}
+              </h2>
+              <div className="space-y-2">
+                {stat.items.map((entry, idx) => (
+                  <div key={entry.playerId} className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-950 p-3 group hover:border-cyan-500/20 transition-all">
+                     <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-zinc-600 w-4">{idx + 1}.</span>
+                        <div>
+                          <p className="font-semibold text-white text-xs group-hover:text-cyan-400 transition-colors">{entry.player.firstName} {entry.player.lastName}</p>
+                          <p className="text-[9px] font-medium text-zinc-500">{entry.player.team.name}</p>
+                        </div>
+                     </div>
+                     {stat.type === "cards" ? (
+                       <div className="flex gap-2">
+                          <div className="flex items-center gap-1">
+                             <span className="h-3 w-2 bg-amber-400 rounded-sm" />
+                             <span className="text-xs font-semibold tabular-nums">{(entry as any).yellowCards}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                             <span className="h-3 w-2 bg-rose-500 rounded-sm" />
+                             <span className="text-xs font-semibold tabular-nums">{(entry as any).redCards}</span>
+                          </div>
+                       </div>
+                     ) : (
+                       <span className={`text-base font-bold tabular-nums ${stat.color}`}>{(entry as any)[stat.val!]}</span>
+                     )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
 
-          <article className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
-            <h2 className="text-lg font-semibold text-cyan-200">Top 10 Passeurs</h2>
-            <div className="mt-3 space-y-1 text-sm">
-              {data.topAssists.map((entry) => (
-                <p key={entry.playerId}>
-                  {entry.player.firstName} {entry.player.lastName} ({entry.player.team.name}) • {entry.assists}
-                </p>
-              ))}
-            </div>
-          </article>
-
-          <article className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
-            <h2 className="text-lg font-semibold text-cyan-200">Discipline</h2>
-            <div className="mt-3 space-y-1 text-sm">
-              {data.discipline.map((entry) => {
-                const suspended = entry.redCards > 0 || entry.yellowCards >= 2;
-                return (
-                  <p key={entry.playerId}>
-                    {entry.player.firstName} {entry.player.lastName} • 🟨 {entry.yellowCards} / 🟥 {entry.redCards}
-                    {suspended ? " • Suspendu" : ""}
-                  </p>
-                );
-              })}
-            </div>
-          </article>
-        </section>
-
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-          <h2 className="text-xl font-semibold text-cyan-300">Effectifs par équipe</h2>
-          <div className="mt-4 grid gap-4 md:grid-cols-3 lg:grid-cols-4">
+        {/* Teams Fleet List */}
+        <section className="rounded-2xl border border-zinc-100/5 bg-gradient-to-b from-zinc-900 to-zinc-950 p-6 shadow-xl relative overflow-hidden">
+           <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
+           <div className="flex justify-between items-end mb-6">
+              <h2 className="text-lg font-semibold uppercase text-white">Les Équipes</h2>
+              <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wide hidden md:block">Effectifs Officiels</p>
+           </div>
+           
+           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {data.teams.map((team) => (
               <a 
                 key={team.id} 
                 href={`/teams/${team.id}`}
-                className="group rounded-xl border border-zinc-800 bg-zinc-950 p-4 transition-all hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/5"
+                className="group relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-5 transition-all hover:-translate-y-1 hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/5"
               >
-                <div className="flex items-center gap-3">
+                <div className="absolute top-0 right-0 p-3">
+                   <span className="text-[10px] font-medium text-zinc-700 group-hover:text-cyan-500 transition-colors">{team.players.length} JP</span>
+                </div>
+                <div className="flex flex-col items-center text-center gap-4">
                   {team.logoUrl ? (
-                    <img src={team.logoUrl} alt={team.name} className="h-10 w-10 rounded-lg object-cover" />
+                    <img src={team.logoUrl} alt={team.name} className="h-16 w-16 rounded-2xl object-cover border-2 border-zinc-800 shadow-lg group-hover:scale-105 transition-transform duration-300" />
                   ) : (
-                    <div className="h-10 w-10 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-500 font-bold">
+                    <div className="h-16 w-16 rounded-2xl bg-zinc-900 flex items-center justify-center text-zinc-600 font-bold text-3xl border-2 border-zinc-800">
                       {team.name.charAt(0)}
                     </div>
                   )}
                   <div>
-                    <h3 className="font-semibold text-zinc-100 group-hover:text-cyan-300 transition-colors">{team.name}</h3>
-                    <p className="text-xs text-zinc-500">{team.players.length} Joueurs</p>
+                    <h3 className="text-sm font-semibold text-white uppercase group-hover:text-cyan-400 transition-colors">{team.name}</h3>
+                    <p className="mt-0.5 text-[10px] font-normal text-zinc-600">
+                      {team.coachFirstName} {team.coachLastName}
+                    </p>
+                  </div>
+                  <div className="w-full h-px bg-zinc-800 group-hover:bg-cyan-500/20 transition-colors" />
+                  <div className="flex items-center gap-1.5 text-cyan-500 font-medium text-[10px] uppercase opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all">
+                     Voir profil
+                     <span>→</span>
                   </div>
                 </div>
               </a>
@@ -166,7 +256,12 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* Supervised footer (Admin section implicitly here via the component) */}
         <AdminPanel teams={data.teams} matches={data.allMatches} />
+        
+        <footer className="py-8 text-center border-t border-zinc-900">
+           <p className="text-[10px] font-normal text-zinc-600">© 2026 Inter-Classe Master • IAI Football Foundation</p>
+        </footer>
       </div>
     </main>
   );

@@ -4,6 +4,8 @@ import { db } from "@/lib/firebase";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import Link from "next/link";
 import { CoachAddPlayer } from "./_components/CoachAddPlayer";
+import { CoachPlayersList } from "./_components/CoachPlayersList";
+import { CoachEditTeam } from "./_components/CoachEditTeam";
 
 export const dynamic = "force-dynamic";
 
@@ -82,6 +84,7 @@ export default async function CoachDashboard() {
               <p className="mt-2 text-sm text-zinc-400 font-medium capitalize">
                 Coach: {coachFirstName} {coachLastName}
               </p>
+              <CoachEditTeam team={team} />
             </div>
 
             <div className="flex items-center gap-4 mt-6 md:mt-0">
@@ -107,28 +110,7 @@ export default async function CoachDashboard() {
           <div className="grid gap-8 lg:grid-cols-3">
             <section className="lg:col-span-2 space-y-8">
               <div className="rounded-3xl border border-zinc-800 bg-zinc-900/30 p-8 shadow-xl">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-black uppercase tracking-tight text-white italic">Effectif</h2>
-                  <span className="text-[10px] bg-cyan-500/10 text-cyan-400 px-3 py-1 rounded-full border border-cyan-500/20 font-bold uppercase">{players.length} Joueurs</span>
-                </div>
-
-                {players.length === 0 ? (
-                  <p className="text-center text-sm text-zinc-500 py-8 uppercase tracking-widest font-bold">Aucun joueur dans cet effectif</p>
-                ) : (
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {players.map(player => (
-                      <div key={player.id} className="flex items-center gap-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-4 hover:border-cyan-500/30 transition-all group">
-                        <div className="h-12 w-12 rounded-full bg-zinc-900 flex items-center justify-center text-sm font-black text-zinc-700 border border-zinc-800 group-hover:text-cyan-500 group-hover:border-cyan-500/20 transition-all">
-                          #{player.number}
-                        </div>
-                        <div>
-                          <p className="font-bold text-zinc-100 group-hover:text-white transition-colors capitalize">{player.firstName} {player.lastName}</p>
-                          <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-black">{player.position || "Non assigné"}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <CoachPlayersList players={players} />
               </div>
             </section>
 
