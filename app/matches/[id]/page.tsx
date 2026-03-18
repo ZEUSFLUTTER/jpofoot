@@ -8,7 +8,7 @@ import { EventsTimeline } from "./_components/EventsTimeline";
 import { MatchStats } from "./_components/MatchStats";
 import { PreMatchInfo } from "./_components/PreMatchInfo";
 import { Lineups } from "./_components/Lineups";
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/types";
 import Link from "next/link";
 
 export default function MatchDetailPage() {

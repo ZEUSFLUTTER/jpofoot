@@ -1,6 +1,6 @@
 "use client";
 
-import { EventType, MatchStatus } from "@prisma/client";
+import { EventType, MatchStatus } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 
@@ -28,8 +28,14 @@ type Player = {
   lastName: string;
   number: number;
   teamId: string;
-  position?: string;
-  photoUrl?: string;
+  position?: string | null;
+  photoUrl?: string | null;
+  stats?: {
+    goals: number;
+    assists: number;
+    yellowCards: number;
+    redCards: number;
+  } | null;
 };
 
 type Team = {
@@ -42,7 +48,7 @@ type MatchEvent = {
   id: string;
   type: EventType;
   minute: number;
-  player: { firstName: string; lastName: string };
+  player: { id: string; firstName: string; lastName: string; teamId: string };
 };
 
 type Match = {
@@ -53,7 +59,7 @@ type Match = {
   scoreB: number;
   status: MatchStatus;
   liveMinute: number;
-  date: string;
+  date: string | Date;
   teamA: { name: string };
   teamB: { name: string };
   events: MatchEvent[];
