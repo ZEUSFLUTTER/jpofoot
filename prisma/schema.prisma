@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum MatchStatus {
+  PREVU
+  LIVE
+  FINI
+}
+
+enum EventType {
+  GOAL
+  ASSIST
+  YELLOW
+  RED
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  logoUrl   String?
+  colors    String?
+  players   Player[]
+  homeGames Match[]  @relation("HomeTeam")
+  awayGames Match[]  @relation("AwayTeam")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("SchoolClass")
+}
+
+model Player {
+  id         String       @id @default(cuid())
+  firstName  String
+  lastName   String
+  number     Int
+  position   String?
+  photoUrl   String?
+  teamId     String       @map("classId")
+  team       Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  events     MatchEvent[]
+  assistsFor MatchEvent[] @relation("RelatedPlayer")
+  stats      PlayerStat?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@unique([teamId, number])
+  @@index([teamId])
+}
+
+model Match {
+  id         String      @id @default(cuid())
+  teamAId    String
+  teamBId    String
+  teamA      Team        @relation("HomeTeam", fields: [teamAId], references: [id], onDelete: Restrict)
+  teamB      Team        @relation("AwayTeam", fields: [teamBId], references: [id], onDelete: Restrict)
+  date       DateTime
+  scoreA     Int         @default(0)
+  scoreB     Int         @default(0)
+  status     MatchStatus @default(PREVU)
+  liveMinute Int         @default(0)
+  events     MatchEvent[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@index([date])
+  @@index([status])
+}
+
+model MatchEvent {
+  id           String    @id @default(cuid())
+  matchId      String
+  playerId     String
+  type         EventType
+  minute       Int
+  relatedToId  String?
+  match        Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player       Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  relatedTo    Player?   @relation("RelatedPlayer", fields: [relatedToId], references: [id], onDelete: SetNull)
+  createdAt    DateTime  @default(now())
+
+  @@index([matchId])
+  @@index([playerId])
+  @@index([type])
+}
+
+model PlayerStat {
+  playerId      String   @id
+  goals         Int      @default(0)
+  assists       Int      @default(0)
+  yellowCards   Int      @default(0)
+  redCards      Int      @default(0)
+  player        Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  updatedAt     DateTime @updatedAt
+}
