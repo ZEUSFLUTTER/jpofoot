@@ -308,7 +308,8 @@ export function AdminPanel({ teams, matches }: Props) {
       body: JSON.stringify(payload),
     });
     if (!response.ok) {
-      setMessage("Erreur score");
+      const result = await response.json();
+      setMessage(typeof result.error === "string" ? result.error : "Erreur lors de la création du match. Vérifiez les champs.");
       return;
     }
     setMessage("Match clôturé");
@@ -316,19 +317,24 @@ export function AdminPanel({ teams, matches }: Props) {
   }
 
   async function handleCreateMatch(formData: FormData) {
+    const rawDate = String(formData.get("date") ?? "");
+    // Convert datetime-local to ISO for Zod datetime() validation
+    const isoDate = rawDate ? new Date(rawDate).toISOString() : "";
+    
     const payload = {
       teamAId: String(formData.get("teamAId") ?? ""),
       teamBId: String(formData.get("teamBId") ?? ""),
-      date: String(formData.get("date") ?? ""),
+      date: isoDate,
     };
     const response = await fetch("/api/admin/matches", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
+
+    const result = await response.json();
     if (!response.ok) {
-      const result = await response.json();
-      setMessage(result.error || "Erreur création match");
+      setMessage(typeof result.error === "string" ? result.error : "Données de match invalides.");
       return;
     }
     setMessage("Match planifié");
@@ -424,7 +430,9 @@ export function AdminPanel({ teams, matches }: Props) {
                <div className="space-y-4">
                   {matches.slice(0, 5).map(m => (
                     <div key={m.id} className="flex items-center justify-between p-4 rounded-xl border border-zinc-900 hover:border-zinc-700 transition-colors">
-                       <span className="text-xs font-black uppercase text-zinc-300">{m.teamA.name} <b className="text-cyan-500 mx-2">VS</b> {m.teamB.name}</span>
+                       <span className="text-xs font-black uppercase text-zinc-300">
+                         {m.teamA?.name || "Inconnu"} <b className="text-cyan-500 mx-2">VS</b> {m.teamB?.name || "Inconnu"}
+                       </span>
                        <span className={cn(
                          "text-[9px] font-black uppercase px-3 py-1 rounded-full",
                          m.status === MatchStatus.FINI ? "bg-zinc-800 text-zinc-500" : "bg-emerald-500/10 text-emerald-500"
@@ -599,7 +607,7 @@ export function AdminPanel({ teams, matches }: Props) {
                                  {new Date(m.date).toLocaleDateString("fr-FR", { day: '2-digit', month: 'short' })} • {m.status}
                                </p>
                                <p className={cn("text-xs font-black uppercase tracking-tight", selectedMatchId === m.id ? "text-white" : "text-zinc-300")}>
-                                 {m.teamA.name} VS {m.teamB.name}
+                                 {m.teamA?.name || "???"} VS {m.teamB?.name || "???"}
                                </p>
                             </button>
                             <button 
@@ -631,12 +639,12 @@ export function AdminPanel({ teams, matches }: Props) {
 
                          <div className="flex flex-col md:flex-row items-center justify-center gap-10 py-6">
                             <div className="text-center flex-1">
-                               <p className="text-[10px] font-black text-cyan-500 uppercase tracking-widest mb-3">{selectedMatch.teamA.name}</p>
+                               <p className="text-[10px] font-black text-cyan-500 uppercase tracking-widest mb-3">{selectedMatch.teamA?.name || "???"}</p>
                                <span className="text-7xl font-black italic tracking-tighter text-white tabular-nums">{selectedMatch.scoreA}</span>
                             </div>
                             <div className="text-zinc-800 text-4xl font-light">-</div>
                             <div className="text-center flex-1">
-                               <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-3">{selectedMatch.teamB.name}</p>
+                               <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-3">{selectedMatch.teamB?.name || "???"}</p>
                                <span className="text-7xl font-black italic tracking-tighter text-white tabular-nums">{selectedMatch.scoreB}</span>
                             </div>
                          </div>
@@ -694,11 +702,11 @@ export function AdminPanel({ teams, matches }: Props) {
                             >
                                <div className="grid grid-cols-2 gap-3">
                                   <div>
-                                     <p className="text-[8px] font-black uppercase text-zinc-600 mb-1">Score {selectedMatch.teamA.name}</p>
+                                     <p className="text-[8px] font-black uppercase text-zinc-600 mb-1">Score {selectedMatch.teamA?.name || "???"}</p>
                                      <input name="scoreA" type="number" defaultValue={selectedMatch.scoreA} className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-lg font-black text-white text-center" />
                                   </div>
                                   <div>
-                                     <p className="text-[8px] font-black uppercase text-zinc-600 mb-1">Score {selectedMatch.teamB.name}</p>
+                                     <p className="text-[8px] font-black uppercase text-zinc-600 mb-1">Score {selectedMatch.teamB?.name || "???"}</p>
                                      <input name="scoreB" type="number" defaultValue={selectedMatch.scoreB} className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-lg font-black text-white text-center" />
                                   </div>
                                </div>
