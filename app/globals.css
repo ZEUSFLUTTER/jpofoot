@@ -19,6 +19,52 @@
   }
 }
 
+
+/* === Dark mode (default) === */
+:root, [data-theme="dark"] {
+  --bg-primary: #09090b;
+  --bg-secondary: #18181b;
+  --bg-card: #18181b;
+  --border-color: #27272a;
+  --text-primary: #f4f4f5;
+  --text-muted: #71717a;
+}
+
+/* === Light mode === */
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f4f4f5;
+  --bg-card: #fafafa;
+  --border-color: #e4e4e7;
+  --text-primary: #09090b;
+  --text-muted: #71717a;
+}
+
+[data-theme="light"] body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Swap zinc-950 backgrounds in light mode */
+[data-theme="light"] .bg-zinc-950 { background-color: #ffffff !important; }
+[data-theme="light"] .bg-zinc-900\/50 { background-color: #f4f4f5 !important; }
+[data-theme="light"] .bg-zinc-900\/30 { background-color: #f4f4f5 !important; }
+[data-theme="light"] .bg-zinc-900 { background-color: #f4f4f5 !important; }
+[data-theme="light"] .bg-zinc-800\/50 { background-color: #e4e4e7 !important; }
+[data-theme="light"] .bg-zinc-800 { background-color: #e4e4e7 !important; }
+[data-theme="light"] .bg-zinc-950\/80 { background-color: rgba(255,255,255,0.85) !important; }
+
+/* Swap text colors in light mode */
+[data-theme="light"] .text-zinc-100 { color: #18181b !important; }
+[data-theme="light"] .text-zinc-400 { color: #52525b !important; }
+[data-theme="light"] .text-zinc-500 { color: #71717a !important; }
+[data-theme="light"] .text-zinc-600 { color: #52525b !important; }
+[data-theme="light"] .text-white { color: #09090b !important; }
+
+/* Swap border colors in light mode */
+[data-theme="light"] .border-zinc-800 { border-color: #d4d4d8 !important; }
+[data-theme="light"] .border-zinc-900 { border-color: #e4e4e7 !important; }
+
 body {
   background: var(--background);
   color: var(--foreground);

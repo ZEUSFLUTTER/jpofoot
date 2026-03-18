@@ -237,40 +237,45 @@ export async function getMatchById(id: string) {
       })
     };
 
-    // Fetch H2H and Form
-    const [h2hSnap, teamAFormSnap, teamBFormSnap] = await Promise.all([
-      getDocs(query(
+    // Fetch all finished matches — simple where only, no orderBy (avoids composite index)
+    let finishedMatchesDocs: any[] = [];
+    try {
+      const finishedSnap = await getDocs(query(
         collection(db, "matches"),
-        where("teamAId", "in", [match.teamAId, match.teamBId]),
-        where("status", "==", MatchStatus.FINI),
-        orderBy("date", "desc"),
-        limit(5)
-      )),
-      getDocs(query(
-        collection(db, "matches"),
-        where("status", "==", MatchStatus.FINI),
-        orderBy("date", "desc")
-      )),
-      getDocs(query(
-        collection(db, "matches"),
-        where("status", "==", MatchStatus.FINI),
-        orderBy("date", "desc")
-      )),
-    ]);
+        where("status", "==", MatchStatus.FINI)
+      ));
+      finishedMatchesDocs = finishedSnap.docs;
+    } catch (e) {
+      console.warn("Could not fetch finished matches for H2H/form:", e);
+    }
 
-    const filterForm = (docs: any[], teamId: string) => 
-      docs.filter(d => d.data().teamAId === teamId || d.data().teamBId === teamId).slice(0, 5).map(d => ({ id: d.id, ...d.data() }));
+    // Sort in-memory by date desc
+    finishedMatchesDocs.sort((a, b) => {
+      const dA = a.data().date?.toDate ? a.data().date.toDate().getTime() : new Date(a.data().date).getTime();
+      const dB = b.data().date?.toDate ? b.data().date.toDate().getTime() : new Date(b.data().date).getTime();
+      return dB - dA;
+    });
+
+    const h2hMatches = finishedMatchesDocs
+      .filter(d => {
+        const dData = d.data();
+        return (dData.teamAId === match.teamAId && dData.teamBId === match.teamBId)
+          || (dData.teamAId === match.teamBId && dData.teamBId === match.teamAId);
+      })
+      .slice(0, 5)
+      .map(d => ({ id: d.id, ...d.data() }));
+
+    const filterForm = (docs: any[], teamId: string) =>
+      docs
+        .filter(d => d.data().teamAId === teamId || d.data().teamBId === teamId)
+        .slice(0, 5)
+        .map(d => ({ id: d.id, ...d.data() }));
 
     return {
       match,
-      h2hMatches: h2hSnap.docs
-        .filter(d => {
-          const dData = d.data();
-          return (dData.teamAId === match.teamAId && dData.teamBId === match.teamBId) || (dData.teamAId === match.teamBId && dData.teamBId === match.teamAId);
-        })
-        .map(d => ({ id: d.id, ...d.data() })),
-      teamAForm: filterForm(teamAFormSnap.docs, match.teamAId),
-      teamBForm: filterForm(teamBFormSnap.docs, match.teamBId),
+      h2hMatches,
+      teamAForm: filterForm(finishedMatchesDocs, match.teamAId),
+      teamBForm: filterForm(finishedMatchesDocs, match.teamBId),
     };
   } catch (error) {
     console.error(`Error in getMatchById for match ${id}:`, error);
