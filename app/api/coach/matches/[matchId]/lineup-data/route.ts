@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
+import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { cookies } from "next/headers";
 
 type Context = { params: Promise<{ matchId: string }> };
@@ -32,12 +32,11 @@ export async function GET(request: Request, context: Context) {
       return NextResponse.json({ error: "Vous n'êtes pas le coach d'une des équipes de ce match" }, { status: 403 });
     }
 
-    // Fetch Coach's Team & Players
+    // Fetch Coach's Team & Players — no orderBy to avoid composite index
     const teamSnap = await getDoc(doc(db, "teams", teamId));
     const playersSnap = await getDocs(query(
       collection(db, "players"), 
-      where("teamId", "==", teamId),
-      orderBy("number", "asc")
+      where("teamId", "==", teamId)
     ));
 
     return NextResponse.json({
