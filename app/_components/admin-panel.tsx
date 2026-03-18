@@ -130,6 +130,8 @@ export function AdminPanel({ teams, matches }: Props) {
     const payload = {
       name: String(formData.get("name") ?? ""),
       colors: String(formData.get("colors") ?? ""),
+      coachFirstName: String(formData.get("coachFirstName") ?? ""),
+      coachLastName: String(formData.get("coachLastName") ?? ""),
       logoUrl: logoUrl,
     };
     const response = await fetch("/api/admin/equipes", {
@@ -319,6 +321,10 @@ export function AdminPanel({ teams, matches }: Props) {
           >
             <h3 className="font-medium text-zinc-100">Créer une équipe</h3>
             <input name="name" required placeholder="Ex: Terminale C4" className="w-full rounded bg-zinc-800 p-2 text-sm text-white" />
+            <div className="grid grid-cols-2 gap-2">
+              <input name="coachFirstName" required placeholder="Prénom du Coach" className="rounded bg-zinc-800 p-2 text-sm text-white" />
+              <input name="coachLastName" required placeholder="Nom du Coach" className="rounded bg-zinc-800 p-2 text-sm text-white" />
+            </div>
             <input name="colors" placeholder="Couleurs (Bleu / Blanc)" className="w-full rounded bg-zinc-800 p-2 text-sm text-white" />
             <div className="space-y-1">
               <label className="text-[10px] text-zinc-500 uppercase font-bold">Logo de l'équipe</label>

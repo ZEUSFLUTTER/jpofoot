@@ -116,7 +116,7 @@ export default function MatchDetailPage() {
 
           {activeTab === "compos" && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <Lineups teamA={match.teamA} teamB={match.teamB} />
+              <Lineups teamA={match.teamA} teamB={match.teamB} match={match} />
             </div>
           )}
         </div>

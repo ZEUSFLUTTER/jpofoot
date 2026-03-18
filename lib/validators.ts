@@ -5,6 +5,8 @@ export const createTeamSchema = z.object({
   name: z.string().min(2),
   logoUrl: z.string().url().optional().or(z.literal("")),
   colors: z.string().optional(),
+  coachFirstName: z.string().min(2),
+  coachLastName: z.string().min(2),
 });
 
 export const updateTeamSchema = createTeamSchema.partial();
