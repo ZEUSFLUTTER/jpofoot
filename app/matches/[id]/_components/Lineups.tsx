@@ -24,17 +24,17 @@ export function Lineups({ teamA, teamB, match }: LineupsProps) {
 
   const PlayerCard = ({ player, isLeft, colorClass }: { player: any; isLeft: boolean; colorClass: string }) => (
     <div className={cn(
-      "flex items-center gap-3 rounded-xl bg-zinc-900/50 p-2.5 border border-zinc-800/50 hover:bg-zinc-800/80 transition-all group",
+      "flex items-center gap-4 rounded-2xl bg-zinc-900 px-4 py-3 border border-zinc-800 hover:bg-zinc-800/80 transition-all group hover:border-cyan-500/20",
       !isLeft && "flex-row-reverse text-right"
     )}>
-      <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-800 font-black group-hover:scale-110 transition-transform shadow-lg border border-zinc-700", colorClass)}>
-        #{player.number}
+      <div className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-800 font-black text-lg group-hover:scale-110 transition-transform shadow-2xl border-2 border-zinc-700", colorClass)}>
+        {player.number}
       </div>
       <div className="flex-1 overflow-hidden">
-        <p className="truncate text-sm font-bold text-white uppercase tracking-tighter">
+        <p className="truncate text-sm font-black text-white uppercase tracking-tight group-hover:text-cyan-400 transition-colors">
           {player.firstName} {player.lastName}
         </p>
-        <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-black">
+        <p className="text-[10px] text-zinc-500 uppercase tracking-[0.2em] font-bold mt-0.5">
           {player.position || "Joueur"}
         </p>
       </div>

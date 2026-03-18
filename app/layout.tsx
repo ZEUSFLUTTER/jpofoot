@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 import { ThemeToggle } from "./_components/ThemeToggle";
 
-const inter = Inter({
-  variable: "--font-inter",
+const fontPrimary = Outfit({
+  variable: "--font-primary",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -22,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body
-        className={`${inter.variable} font-sans antialiased bg-zinc-950 text-zinc-100`}
+        className={`${fontPrimary.variable} font-primary antialiased bg-zinc-950 text-zinc-100`}
       >
         {children}
         <ThemeToggle />

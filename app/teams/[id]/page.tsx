@@ -14,43 +14,45 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-4 py-12 text-zinc-100 md:px-10 font-sans">
+    <main className="min-h-screen bg-zinc-950 px-4 py-12 text-zinc-100 md:px-10 font-primary">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-12">
         {/* Header Section */}
-        <header className="flex flex-col md:flex-row items-center gap-6 rounded-2xl border border-zinc-800 bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 p-7 shadow-xl shadow-cyan-500/5 relative overflow-hidden">
+        <header className="flex flex-col md:flex-row items-center gap-8 rounded-[2.5rem] border border-zinc-800 bg-zinc-900/50 p-10 shadow-2xl shadow-cyan-500/5 relative overflow-hidden backdrop-blur-xl">
           <div className="absolute top-0 right-0 h-64 w-64 bg-cyan-500/5 blur-[120px] rounded-full -mr-32 -mt-32" />
           
           <div className="relative z-10 shrink-0">
             {team.logoUrl ? (
-              <img src={team.logoUrl} alt={team.name} className="h-20 w-20 rounded-2xl object-cover border-2 border-zinc-800 shadow-xl shadow-black/50" />
+              <img src={team.logoUrl} alt={team.name} className="h-24 w-24 rounded-3xl object-cover border-2 border-zinc-800 shadow-2xl shadow-black/50 group-hover:scale-105 transition-transform" />
             ) : (
-              <div className="h-20 w-20 rounded-2xl bg-zinc-800 flex items-center justify-center text-zinc-500 text-4xl font-bold border-2 border-zinc-800 shadow-xl">
+              <div className="h-24 w-24 rounded-3xl bg-zinc-800 flex items-center justify-center text-zinc-500 text-5xl font-black border-2 border-zinc-700 shadow-2xl">
                 {team.name.charAt(0)}
               </div>
             )}
           </div>
 
           <div className="text-center md:text-left relative z-10 flex-1">
-            <h1 className="text-2xl md:text-3xl font-bold text-white uppercase">
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-500 mb-2 block">Profil de l'Équipe</span>
+            <h1 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter">
               {team.name}
             </h1>
-            <div className="mt-3 flex flex-wrap items-center justify-center md:justify-start gap-3">
-              <div className="bg-zinc-800/50 backdrop-blur-md px-3 py-1.5 rounded-lg border border-zinc-700/50">
-                <p className="text-[9px] font-semibold uppercase tracking-wide text-cyan-500 mb-0.5">Coach Principal</p>
-                <p className="text-sm font-semibold text-white">{team.coachFirstName} {team.coachLastName}</p>
+            <div className="mt-5 flex flex-wrap items-center justify-center md:justify-start gap-4">
+              <div className="bg-zinc-800/50 backdrop-blur-md px-4 py-2 rounded-xl border border-zinc-700/50">
+                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-1">Entraîneur</p>
+                <p className="text-sm font-bold text-white uppercase">{team.coachFirstName} {team.coachLastName}</p>
               </div>
               {team.colors && (
-                <div className="bg-zinc-800/50 backdrop-blur-md px-3 py-1.5 rounded-lg border border-zinc-700/50">
-                  <p className="text-[9px] font-semibold uppercase tracking-wide text-zinc-500 mb-0.5">Couleurs</p>
-                  <p className="text-sm font-semibold text-zinc-300">{team.colors}</p>
+                <div className="bg-zinc-800/50 backdrop-blur-md px-4 py-2 rounded-xl border border-zinc-700/50">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-1">Couleurs</p>
+                  <p className="text-sm font-bold text-zinc-300 uppercase italic opacity-80">{team.colors}</p>
                 </div>
               )}
             </div>
           </div>
 
           <div className="md:self-start">
-             <a href="/" className="px-4 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-medium text-zinc-500 hover:text-white hover:border-zinc-700 transition-all shadow-lg active:scale-95">
-               ← Accueil
+             <a href="/" className="group px-6 py-2.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-xs font-black text-zinc-500 hover:text-white hover:border-zinc-700 transition-all shadow-xl active:scale-95 uppercase tracking-widest">
+               <span className="inline-block transition-transform group-hover:-translate-x-1 mr-2">←</span>
+               Accueil
              </a>
           </div>
         </header>

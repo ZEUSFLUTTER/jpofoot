@@ -1,8 +1,9 @@
 import { MatchStatus } from "@/lib/types";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { AdminPanel } from "@/app/_components/admin-panel";
 import { getDashboardData } from "@/lib/tournament";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export default async function Home() {
   const data = await getDashboardData();
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-4 py-8 text-zinc-100 md:px-10 font-sans selection:bg-cyan-500/30">
+    <main className="min-h-screen bg-zinc-950 px-4 py-8 text-zinc-100 md:px-10 font-primary selection:bg-cyan-500/30">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-12">
         {/* Header Section */}
         <header className="relative flex flex-col items-center justify-between gap-6 rounded-[2rem] border border-zinc-800 bg-zinc-900/50 p-8 shadow-2xl shadow-cyan-500/5 backdrop-blur-xl overflow-hidden md:flex-row">
@@ -77,29 +78,35 @@ export default async function Home() {
                     </div>
                   ) : (
                     block.matches.map((match) => (
-                      <div key={match.id} className="group relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-4 transition-all hover:border-cyan-500/50 hover:bg-zinc-900">
+                      <Link 
+                        key={match.id} 
+                        href={`/matches/${match.id}`}
+                        className="group relative block overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-4 transition-all hover:border-cyan-500/50 hover:bg-zinc-900 hover:-translate-y-1 active:scale-[0.98]"
+                      >
                         <div className="mb-3 flex justify-between items-center">
                            <StatusBadge status={match.status as MatchStatus} />
-                           <span className="text-[10px] font-medium text-zinc-500 tabular-nums">
+                           <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 tabular-nums">
                               {format(new Date(match.date), "HH:mm")}
                            </span>
                         </div>
                         <div className="flex items-center justify-between gap-3">
-                          <span className="flex-1 text-center text-xs font-semibold uppercase truncate text-zinc-300">{match.teamA.name}</span>
+                          <span className="flex-1 text-center text-xs font-black uppercase tracking-tight truncate text-zinc-300 group-hover:text-white transition-colors">{match.teamA.name}</span>
                           <div className="flex h-9 items-center justify-center rounded-lg bg-zinc-900 px-3 border border-zinc-800 group-hover:bg-cyan-500/10 group-hover:border-cyan-500/20 transition-colors">
-                            <span className="text-base font-bold tabular-nums">{match.scoreA} - {match.scoreB}</span>
+                            <span className="text-base font-black tabular-nums tracking-tighter">{match.scoreA} - {match.scoreB}</span>
                           </div>
-                          <span className="flex-1 text-center text-xs font-semibold uppercase truncate text-zinc-300">{match.teamB.name}</span>
+                          <span className="flex-1 text-center text-xs font-black uppercase tracking-tight truncate text-zinc-300 group-hover:text-white transition-colors">{match.teamB.name}</span>
                         </div>
                         
                         <div className="mt-3 flex flex-wrap gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
                            {match.events.filter(e => e.type === "GOAL").slice(0, 3).map(e => (
-                             <span key={e.id} className="text-[9px] font-medium text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded capitalize">
+                             <span key={e.id} className="text-[9px] font-bold text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded uppercase tracking-tighter">
                                ⚽ {e.player.lastName} ({e.minute}')
                              </span>
                            ))}
                         </div>
-                      </div>
+                        
+                        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-cyan-500/0 to-transparent group-hover:via-cyan-500/40 transition-all" />
+                      </Link>
                     ))
                   )}
                 </div>
@@ -256,8 +263,7 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Supervised footer (Admin section implicitly here via the component) */}
-        <AdminPanel teams={data.teams} matches={data.allMatches} />
+        {/* Footer Section */}
         
         <footer className="py-8 text-center border-t border-zinc-900">
            <p className="text-[10px] font-normal text-zinc-600">© 2026 Inter-Classe Master • IAI Football Foundation</p>
