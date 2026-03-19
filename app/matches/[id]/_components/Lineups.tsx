@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import Pitch from "@/components/Pitch";
 
 interface LineupsProps {
   teamA: any;
@@ -16,7 +17,13 @@ export function Lineups({ teamA, teamB, match }: LineupsProps) {
     const starters = team.players.filter((p: any) => lineup.starting11.includes(p.id));
     const substitutes = team.players.filter((p: any) => lineup.substitutes.includes(p.id));
     
-    return { starters, substitutes, formation: lineup.formation, isFullSquad: false };
+    return { 
+      starters, 
+      substitutes, 
+      formation: lineup.formation, 
+      positions: lineup.positions || {},
+      isFullSquad: false 
+    };
   };
 
   const dataA = getLineupData(match.teamAId, true);
@@ -68,6 +75,15 @@ export function Lineups({ teamA, teamB, match }: LineupsProps) {
         </div>
       ) : (
         <div className="space-y-8">
+          {/* Pitch Visualization */}
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-950/50 p-6 shadow-2xl">
+            <Pitch 
+              players={data.starters} 
+              positions={data.positions} 
+              isEditable={false} 
+            />
+          </div>
+
           <div className="space-y-4">
             <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-600 flex items-center gap-2">
               <span className="h-px flex-1 bg-zinc-900" />
@@ -99,7 +115,7 @@ export function Lineups({ teamA, teamB, match }: LineupsProps) {
   );
 
   return (
-    <div className="grid gap-12 lg:grid-cols-2">
+    <div className="grid gap-12 xl:grid-cols-2">
       <TeamSection team={teamA} data={dataA} isLeft={true} />
       <TeamSection team={teamB} data={dataB} isLeft={false} />
     </div>

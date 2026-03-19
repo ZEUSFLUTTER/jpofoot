@@ -8,7 +8,7 @@ type Context = { params: Promise<{ matchId: string }> };
 export async function POST(request: Request, context: Context) {
   try {
     const { matchId } = await context.params;
-    const { formation, starting11, substitutes } = await request.json();
+    const { formation, starting11, substitutes, positions } = await request.json();
     
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get("coach_session");
@@ -44,6 +44,7 @@ export async function POST(request: Request, context: Context) {
         formation,
         starting11,
         substitutes,
+        positions: positions || {},
         updatedAt: new Date().toISOString()
       }
     });
