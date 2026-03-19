@@ -5,8 +5,12 @@ import {
   getDoc, 
   runTransaction, 
   collection, 
+  getDocs,
   Timestamp, 
-  increment 
+  increment,
+  query,
+  where,
+  orderBy
 } from "firebase/firestore";
 import { createEventSchema } from "@/lib/validators";
 import { MatchStatus, EventType } from "@/lib/types";
@@ -52,10 +56,25 @@ export async function POST(request: Request, context: Context) {
 
     const scorerIsTeamA = playerData.teamId === matchData.teamAId;
 
+    // 0. If RED card, pre-fetch next 2 matches for suspension
+    let suspendedMatchIds: string[] = [];
+    if (parsed.data.type === EventType.RED) {
+      const allMatchesQuery = query(
+        collection(db, "matches"),
+        where("date", ">", matchData.date),
+        orderBy("date", "asc")
+      );
+      const nextMatchesSnap = await getDocs(allMatchesQuery);
+      suspendedMatchIds = nextMatchesSnap.docs
+        .filter(d => d.data().teamAId === playerData.teamId || d.data().teamBId === playerData.teamId)
+        .slice(0, 2)
+        .map(d => d.id);
+    }
+
     const result = await runTransaction(db, async (transaction) => {
       // 1. Prepare event data
       const eventRef = doc(collection(db, "matches", id, "events"));
-      const eventData = {
+      const eventData: any = {
         playerId: parsed.data.playerId,
         minute: parsed.data.minute,
         type: parsed.data.type,
@@ -63,23 +82,20 @@ export async function POST(request: Request, context: Context) {
         createdAt: Timestamp.now()
       };
 
-      // 2. Update Match
-      const matchUpdates: any = {
-        liveMinute: parsed.data.minute
-      };
-
-      if (parsed.data.type === EventType.GOAL) {
-        if (scorerIsTeamA) {
-          matchUpdates.scoreA = increment(1);
-        } else {
-          matchUpdates.scoreB = increment(1);
-        }
+      if (parsed.data.type === EventType.RED) {
+        eventData.suspendedMatchIds = suspendedMatchIds;
       }
 
+      // 2. Update Match
+      const matchUpdates: any = { liveMinute: parsed.data.minute };
+      if (parsed.data.type === EventType.GOAL) {
+        matchUpdates[scorerIsTeamA ? "scoreA" : "scoreB"] = increment(1);
+      }
       transaction.update(matchRef, matchUpdates);
 
       // 3. Update Scoring Player Stats
-      const playerUpdate: any = {};
+      const playerUpdate: any = { "stats.updatedAt": Timestamp.now() };
+      
       if (parsed.data.type === EventType.GOAL) {
         playerUpdate["stats.goals"] = increment(1);
       } else if (parsed.data.type === EventType.ASSIST) {
@@ -88,12 +104,14 @@ export async function POST(request: Request, context: Context) {
         playerUpdate["stats.yellowCards"] = increment(1);
       } else if (parsed.data.type === EventType.RED) {
         playerUpdate["stats.redCards"] = increment(1);
+        // Update suspensions
+        const currentSuspensions = playerData.suspensions || [];
+        playerUpdate.suspensions = [...new Set([...currentSuspensions, ...suspendedMatchIds])];
       }
-      playerUpdate["stats.updatedAt"] = Timestamp.now();
       
       transaction.update(playerRef, playerUpdate);
 
-      // 4. Update Assisting Player Stats (if goal with assist)
+      // 4. Update Assisting Player Stats
       if (parsed.data.type === EventType.GOAL && parsed.data.relatedToId) {
         const assistPlayerRef = doc(db, "players", parsed.data.relatedToId);
         transaction.update(assistPlayerRef, {
@@ -104,7 +122,6 @@ export async function POST(request: Request, context: Context) {
 
       // 5. Create Event
       transaction.set(eventRef, eventData);
-
       return { id: eventRef.id, ...eventData };
     });
 

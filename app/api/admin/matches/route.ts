@@ -89,6 +89,7 @@ export async function POST(request: Request) {
       teamBId: parsed.data.teamBId,
       date: Timestamp.fromDate(new Date(parsed.data.date)),
       title: parsed.data.title || null,
+      meetUrl: (body as any).meetUrl || null,
       status: MatchStatus.PREVU,
       scoreA: 0,
       scoreB: 0,

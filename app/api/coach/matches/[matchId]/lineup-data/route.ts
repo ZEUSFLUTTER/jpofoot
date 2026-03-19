@@ -42,7 +42,15 @@ export async function GET(request: Request, context: Context) {
     return NextResponse.json({
       match: { id: matchSnap.id, ...matchData },
       team: { id: teamSnap.id, ...teamSnap.data() },
-      players: playersSnap.docs.map(d => ({ id: d.id, ...d.data() })),
+      players: playersSnap.docs.map(d => {
+        const pData = d.data();
+        const suspensions = pData.suspensions || [];
+        return { 
+          id: d.id, 
+          ...pData,
+          isSuspended: suspensions.includes(matchId)
+        };
+      }),
       isTeamA
     });
   } catch (error) {

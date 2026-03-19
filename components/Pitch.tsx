@@ -96,10 +96,21 @@ export default function Pitch({ players, positions, onPositionChange, isEditable
             }}
           >
             <div className={cn(
-              "flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-zinc-900 font-black text-xs text-white shadow-xl group-hover:bg-cyan-600 transition-colors",
+              "flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-zinc-900 font-black text-xs text-white shadow-xl group-hover:bg-cyan-600 transition-all overflow-hidden relative",
               isSelected && "scale-125 border-cyan-400 bg-cyan-600 ring-4 ring-cyan-500/30"
             )}>
-              {player.number}
+              {(player as any).photoUrl ? (
+                <>
+                  <img 
+                    src={(player as any).photoUrl} 
+                    alt={player.lastName} 
+                    className="absolute inset-0 h-full w-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
+                  />
+                  <span className="relative z-10 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">{player.number}</span>
+                </>
+              ) : (
+                player.number
+              )}
             </div>
             <div className="mt-1 flex flex-col items-center">
               <span className="whitespace-nowrap rounded bg-zinc-900/80 px-1.5 py-0.5 text-[8px] font-black uppercase text-white shadow backdrop-blur-sm group-hover:bg-cyan-900/90">

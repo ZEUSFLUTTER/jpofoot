@@ -21,6 +21,10 @@ export async function PATCH(request: Request, context: Context) {
     updateData.date = Timestamp.fromDate(new Date(parsed.data.date));
   }
 
+  if (body.meetUrl !== undefined) {
+    updateData.meetUrl = body.meetUrl || null;
+  }
+
   await updateDoc(matchRef, updateData);
 
   return NextResponse.json({ id, ...updateData });

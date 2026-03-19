@@ -68,6 +68,7 @@ type Match = {
   liveMinute: number;
   date: string | Date;
   title?: string | null;
+  meetUrl?: string | null;
   teamA: { name: string };
   teamB: { name: string };
   events: MatchEvent[];
@@ -398,6 +399,7 @@ export function AdminPanel({ teams, matches, managers }: Props) {
       teamAId,
       teamBId,
       date: isoDate,
+      meetUrl: (formData.get("meetUrl") as string)?.trim() || null,
     };
     const response = await fetch("/api/admin/matches", {
       method: "POST",
@@ -482,6 +484,7 @@ export function AdminPanel({ teams, matches, managers }: Props) {
       teamAId: formData.get("teamAId"),
       teamBId: formData.get("teamBId"),
       date: formData.get("date") ? new Date(formData.get("date") as string).toISOString() : editingMatch.date,
+      meetUrl: (formData.get("meetUrl") as string)?.trim() || null,
     };
     const response = await fetch(`/api/admin/matches/${editingMatch.id}`, {
       method: "PATCH",
@@ -711,6 +714,10 @@ export function AdminPanel({ teams, matches, managers }: Props) {
                            {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
                         </select>
                      </div>
+                     <div className="space-y-1">
+                        <label className="text-[9px] font-black uppercase text-zinc-600 ml-1">Photo du Joueur (Optionnel)</label>
+                        <input name="photoFile" type="file" accept="image/*" className="w-full bg-zinc-950 border border-zinc-800 p-2 rounded-xl text-[10px] text-zinc-400 file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-zinc-800 file:text-zinc-300 hover:file:bg-zinc-700 transition-all font-bold" />
+                     </div>
                      <button disabled={isPending || !selectedTeamId} className="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all shadow-lg active:scale-95 disabled:opacity-30">Inscrire Joueur</button>
                   </form>
 
@@ -728,8 +735,19 @@ export function AdminPanel({ teams, matches, managers }: Props) {
                                       <span className="text-lg font-black italic text-zinc-700">#{p.number}</span>
                                    </td>
                                    <td className="p-4">
-                                      <p className="text-xs font-black uppercase text-white truncate">{p.firstName} {p.lastName}</p>
-                                      <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">{p.position}</p>
+                                      <div className="flex items-center gap-3">
+                                         <div className="h-8 w-8 rounded-lg bg-zinc-900 border border-zinc-800 overflow-hidden shrink-0 flex items-center justify-center font-black text-[10px] text-zinc-700">
+                                            {p.photoUrl ? (
+                                              <img src={p.photoUrl} alt={p.lastName} className="h-full w-full object-cover" />
+                                            ) : (
+                                              p.number
+                                            )}
+                                         </div>
+                                         <div className="min-w-0">
+                                            <p className="text-xs font-black uppercase text-white truncate">{p.firstName} {p.lastName}</p>
+                                            <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">{p.position}</p>
+                                         </div>
+                                      </div>
                                    </td>
                                    <td className="p-4 text-right">
                                       <div className="flex justify-end gap-3">
@@ -791,6 +809,7 @@ export function AdminPanel({ teams, matches, managers }: Props) {
                             {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                          </select>
                          <input name="date" type="datetime-local" required className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-sm text-white outline-none" />
+                         <input name="meetUrl" placeholder="Lien Google Meet (Optionnel)" className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-sm text-white outline-none focus:border-cyan-500" />
                       </div>
 
                       <button disabled={isPending} className="w-full bg-cyan-600 hover:bg-cyan-500 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all shadow-lg active:scale-95">Valider Rencontre</button>
@@ -1207,6 +1226,10 @@ export function AdminPanel({ teams, matches, managers }: Props) {
                     {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
                  </select>
               </div>
+              <div className="space-y-2">
+                 <label className="text-[10px] font-black uppercase text-zinc-600 ml-1">Nouvelle Photo (Optionnel)</label>
+                 <input name="photoFile" type="file" accept="image/*" className="w-full bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-[10px] text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-zinc-800 file:text-zinc-300 hover:file:bg-zinc-700 transition-all" />
+              </div>
                <button className="w-full bg-emerald-600 py-4 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg active:scale-95">Enregistrer</button>
            </form>
         </div>
@@ -1233,7 +1256,8 @@ export function AdminPanel({ teams, matches, managers }: Props) {
                     {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                  </select>
               </div>
-              <input name="date" type="datetime-local" defaultValue={new Date(editingMatch.date).toISOString().slice(0, 16)} className="w-full bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm text-white outline-none" />
+              <input name="date" type="datetime-local" defaultValue={new Date(editingMatch.date).toISOString().slice(0, 16)} className="w-full bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm text-white outline-none focus:border-cyan-500" />
+              <input name="meetUrl" defaultValue={editingMatch.meetUrl || ""} placeholder="Lien Google Meet (Optionnel)" className="w-full bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm text-white outline-none focus:border-cyan-500" />
               <button className="w-full bg-cyan-600 py-4 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg active:scale-95">Enregistrer</button>
            </form>
         </div>

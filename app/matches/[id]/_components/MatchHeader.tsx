@@ -1,4 +1,4 @@
-import { Shield } from "lucide-react";
+import { Shield, Video } from "lucide-react";
 import { MatchStatus } from "@/lib/types";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -53,15 +53,29 @@ export function MatchHeader({ match, onViewCompo }: MatchHeaderProps) {
           </div>
           
           <div className="flex flex-col items-center gap-4">
-            {onViewCompo && (
-              <button 
-                onClick={onViewCompo}
-                className="flex items-center gap-2 rounded-xl bg-zinc-950 border border-zinc-800 px-5 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500 hover:text-white hover:bg-zinc-900 transition-all active:scale-95 group shadow-xl"
-              >
-                <Shield size={14} className="group-hover:rotate-12 transition-transform" />
-                Voir Compositions
-              </button>
-            )}
+            <div className="flex flex-col gap-2 items-center">
+              {onViewCompo && (
+                <button 
+                  onClick={onViewCompo}
+                  className="flex items-center gap-2 rounded-xl bg-zinc-950 border border-zinc-800 px-5 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500 hover:text-white hover:bg-zinc-900 transition-all active:scale-95 group shadow-xl w-full justify-center"
+                >
+                  <Shield size={14} className="group-hover:rotate-12 transition-transform" />
+                  Voir Compositions
+                </button>
+              )}
+
+              {isLive && match.meetUrl && (
+                <a 
+                  href={match.meetUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-white hover:bg-emerald-500 transition-all active:scale-95 group shadow-xl shadow-emerald-600/20 animate-pulse w-full justify-center"
+                >
+                  <Video size={14} className="group-hover:scale-110 transition-transform" />
+                  Regarder en direct
+                </a>
+              )}
+            </div>
 
             {!isFinished && !isLive && (
               <div className="text-center">

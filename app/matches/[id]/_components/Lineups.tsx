@@ -35,8 +35,15 @@ export function Lineups({ teamA, teamB, match }: LineupsProps) {
       "flex items-center gap-4 rounded-2xl bg-zinc-900 px-4 py-3 border border-zinc-800 hover:bg-zinc-800/80 transition-all group hover:border-cyan-500/20 shadow-lg",
       !isLeft && "flex-row-reverse text-right"
     )}>
-      <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-800 font-black text-sm group-hover:scale-110 transition-transform border border-zinc-700", colorClass)}>
-        {player.number}
+      <div className={cn(
+        "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-zinc-800 font-black text-sm group-hover:scale-110 transition-transform border border-zinc-700 overflow-hidden relative",
+        colorClass
+      )}>
+        {player.photoUrl ? (
+          <img src={player.photoUrl} alt={player.lastName} className="h-full w-full object-cover" />
+        ) : (
+          player.number
+        )}
       </div>
       <div className="flex-1 overflow-hidden">
         <p className="truncate text-xs font-black text-white uppercase tracking-tight group-hover:text-cyan-400 transition-colors">

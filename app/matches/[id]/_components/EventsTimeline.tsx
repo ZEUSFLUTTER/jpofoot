@@ -29,20 +29,31 @@ export function EventsTimeline({ events, teamAId, teamBId }: EventsTimelineProps
           )}>
             {/* Player Info */}
             <div className={cn(
-              "flex flex-1 flex-col gap-1",
-              isTeamA ? "items-end text-right" : "items-start text-left"
+              "flex flex-1 items-center gap-3",
+              isTeamA ? "flex-row-reverse text-right" : "flex-row text-left"
             )}>
-              <span className="text-sm font-bold text-white">
-                {event.player.firstName} {event.player.lastName}
-              </span>
-              {event.relatedTo && (
-                <span className="text-[10px] text-zinc-500 uppercase tracking-wider">
-                  Assiste: {event.relatedTo.firstName} {event.relatedTo.lastName}
+              <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-zinc-800 bg-zinc-900 shadow-inner">
+                {event.player.photoUrl ? (
+                  <img src={event.player.photoUrl} alt={event.player.lastName} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-[10px] font-black text-zinc-700 bg-zinc-800">
+                    {event.player.lastName.charAt(0)}
+                  </div>
+                )}
+              </div>
+              <div className={cn("flex flex-col gap-1", isTeamA ? "items-end" : "items-start")}>
+                <span className="text-sm font-bold text-white leading-none">
+                  {event.player.firstName} {event.player.lastName}
                 </span>
-              )}
-              {event.type === "GOAL" && (
-                <span className="text-[10px] font-black text-cyan-400 uppercase tracking-tighter shadow-cyan-500/10">BUT!</span>
-              )}
+                {event.type === "GOAL" && (
+                  <span className="text-[10px] font-black text-cyan-400 uppercase tracking-tighter">BUT!</span>
+                )}
+                {event.relatedTo && (
+                  <span className="text-[9px] text-zinc-600 uppercase font-medium">
+                    Assiste: {event.relatedTo.firstName} {event.relatedTo.lastName}
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Icon & Time */}

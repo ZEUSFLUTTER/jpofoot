@@ -34,7 +34,15 @@ export async function DELETE(request: Request, context: Context) {
 
       if (event.type === EventType.GOAL) playerUpdate["stats.goals"] = increment(-1);
       if (event.type === EventType.YELLOW) playerUpdate["stats.yellowCards"] = increment(-1);
-      if (event.type === EventType.RED) playerUpdate["stats.redCards"] = increment(-1);
+      if (event.type === EventType.RED) {
+        playerUpdate["stats.redCards"] = increment(-1);
+        if (event.suspendedMatchIds && Array.isArray(event.suspendedMatchIds)) {
+          const playerSnap = await transaction.get(playerRef);
+          const playerData = playerSnap.data() || {};
+          const currentSuspensions = playerData.suspensions || [];
+          playerUpdate.suspensions = currentSuspensions.filter((id: string) => !event.suspendedMatchIds.includes(id));
+        }
+      }
 
       transaction.update(playerRef, playerUpdate);
 
