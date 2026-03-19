@@ -144,12 +144,6 @@ export default function MatchDetailPage() {
             </div>
           )}
 
-          {activeTab === "h2h" && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <PreMatchInfo match={match} h2hMatches={h2hMatches} teamAForm={teamAForm} teamBForm={teamBForm} />
-            </div>
-          )}
-
           {activeTab === "events" && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-2xl mx-auto py-12">
               <EventsTimeline events={match.events} teamAId={match.teamAId} teamBId={match.teamBId} />

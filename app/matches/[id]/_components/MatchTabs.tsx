@@ -14,7 +14,6 @@ interface MatchTabsProps {
 export function MatchTabs({ currentTab, onTabChange, showLiveTabs }: MatchTabsProps) {
   const tabs = [
     { id: "analyse", label: "Analyse" },
-    { id: "h2h", label: "H2H & Forme" },
     { id: "compos", label: "Compos" },
   ];
 
