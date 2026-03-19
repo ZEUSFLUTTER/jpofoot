@@ -28,6 +28,7 @@ export const createMatchSchema = z.object({
   teamBId: z.string().min(1),
   date: z.string().datetime(),
   title: z.string().optional(),
+  meetUrl: z.string().url().optional().or(z.literal("")),
 });
 
 export const updateMatchSchema = createMatchSchema.partial();

@@ -259,6 +259,7 @@ export async function getMatchById(id: string) {
         players: teamBPlayers 
       },
       lineups: matchData.lineups || null,
+      meetUrl: matchData.meetUrl || null,
       events: eventsSnap.docs.map(d => {
         const eData = d.data() as any;
         const player = [...teamAPlayers, ...teamBPlayers].find(p => p.id === eData.playerId);
