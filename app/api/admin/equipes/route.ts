@@ -21,6 +21,7 @@ export async function POST(request: Request) {
     name: parsed.data.name,
     logoUrl: parsed.data.logoUrl || null,
     colors: parsed.data.colors || null,
+    poule: parsed.data.poule || null,
     coachFirstName: parsed.data.coachFirstName,
     coachLastName: parsed.data.coachLastName,
     createdAt: Timestamp.now(),

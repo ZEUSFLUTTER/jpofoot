@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { 
+  collection, 
+  addDoc, 
+  Timestamp, 
+  getDocs, 
+  query, 
+  where 
+} from "firebase/firestore";
 import { cookies } from "next/headers";
 import { createPlayerSchema } from "@/lib/validators";
 
@@ -24,6 +31,26 @@ export async function POST(request: Request) {
 
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    }
+
+    // Duplicate Check
+    const existingPlayersSnap = await getDocs(query(
+      collection(db, "players"),
+      where("teamId", "==", teamId)
+    ));
+
+    const isDuplicate = existingPlayersSnap.docs.some(doc => {
+      const d = doc.data();
+      const sameName = d.firstName.toLowerCase() === parsed.data.firstName.toLowerCase() && 
+                       d.lastName.toLowerCase() === parsed.data.lastName.toLowerCase();
+      const sameNumber = Number(d.number) === Number(parsed.data.number);
+      return sameName || sameNumber;
+    });
+
+    if (isDuplicate) {
+      return NextResponse.json({ 
+        error: "Un joueur avec ce nom ou ce numéro existe déjà dans votre équipe." 
+      }, { status: 400 });
     }
 
     const playerData = {

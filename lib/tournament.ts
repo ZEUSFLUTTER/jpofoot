@@ -30,12 +30,26 @@ type H2HMap = Map<string, number>;
 
 const getPairKey = (left: string, right: string) => [left, right].sort().join("|");
 
+export type Team = {
+  id: string;
+  name: string;
+  logoUrl?: string | null;
+  colors?: string | null;
+  poule?: string | null;
+  coachFirstName?: string;
+  coachLastName?: string;
+  players: any[];
+};
+
 export async function getDashboardData() {
   try {
-    const [teamsSnap, matchesSnap] = await Promise.all([
+    const [teamsSnap, matchesSnap, managersSnap] = await Promise.all([
       getDocs(query(collection(db, "teams"), orderBy("name", "asc"))),
-      getDocs(query(collection(db, "matches"), orderBy("date", "asc")))
+      getDocs(query(collection(db, "matches"), orderBy("date", "asc"))),
+      getDocs(collection(db, "managers"))
     ]);
+
+    const managers = managersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
     const teams = await Promise.all(teamsSnap.docs.map(async (teamDoc) => {
       const data = teamDoc.data();
@@ -67,6 +81,7 @@ export async function getDashboardData() {
         name: data.name || "",
         logoUrl: data.logoUrl || null,
         colors: data.colors || null,
+        poule: data.poule || null,
         coachFirstName: data.coachFirstName || "",
         coachLastName: data.coachLastName || "",
         players
@@ -79,8 +94,6 @@ export async function getDashboardData() {
       id: m.id,
       ...data,
       date: data.date instanceof Timestamp ? data.date.toDate() : new Date(data.date),
-      // We'll need to fetch team names or join them if needed, 
-      // but for dashboard we usually have team names stored or fetch them
     };
   });
 
@@ -105,6 +118,7 @@ export async function getDashboardData() {
       status: data.status || MatchStatus.PREVU,
       liveMinute: data.liveMinute || 0,
       date: matchDate,
+      title: data.title || null,
       teamA: {
         id: teamA?.id || data.teamAId,
         name: teamA?.name || "Équipe A",
@@ -115,6 +129,7 @@ export async function getDashboardData() {
         name: teamB?.name || "Équipe B",
         logoUrl: teamB?.logoUrl || null,
       },
+      lineups: data.lineups || null,
       events: [] as any[]
     };
   });
@@ -159,6 +174,7 @@ export async function getDashboardData() {
     return {
       teams,
       allMatches: hydratedMatches,
+      managers,
       standings,
       liveMatches,
       upcomingMatches,
@@ -242,6 +258,7 @@ export async function getMatchById(id: string) {
         ...(teamBSnap.data() || {}),
         players: teamBPlayers 
       },
+      lineups: matchData.lineups || null,
       events: eventsSnap.docs.map(d => {
         const eData = d.data() as any;
         const player = [...teamAPlayers, ...teamBPlayers].find(p => p.id === eData.playerId);

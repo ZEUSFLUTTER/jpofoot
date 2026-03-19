@@ -31,9 +31,10 @@ export async function POST(request: Request, context: Context) {
     }
 
     const matchData = matchSnap.data() as any;
+    const allowedStatuses = [MatchStatus.LIVE, MatchStatus.MT, MatchStatus.MT2, MatchStatus.PROLO, MatchStatus.TAB];
 
-    if (matchData.status !== MatchStatus.LIVE) {
-      return NextResponse.json({ error: "Le match doit être en direct pour ajouter un événement" }, { status: 400 });
+    if (!allowedStatuses.includes(matchData.status)) {
+      return NextResponse.json({ error: "Le match n'est pas dans un état permettant l'ajout d'événements" }, { status: 400 });
     }
 
     // Verify player belongs to one of the teams

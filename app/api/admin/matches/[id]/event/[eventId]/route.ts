@@ -46,8 +46,8 @@ export async function DELETE(request: Request, context: Context) {
         });
       }
 
-      // Update Match Score if Goal
-      if (event.type === EventType.GOAL) {
+      // Update Match Score if Goal or if it was a TAB_SCORE that incorrectly updated the main score
+      if (event.type === EventType.GOAL || event.type === EventType.TAB_SCORE) {
         const playerSnap = await transaction.get(playerRef);
         const player = playerSnap.data();
         if (!player) throw new Error("Joueur introuvable lors de la mise à jour du score");

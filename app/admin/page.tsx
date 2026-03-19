@@ -24,7 +24,7 @@ export default async function AdminPage() {
 
   return (
     <main className="min-h-screen bg-zinc-950 px-4 py-8 text-zinc-100 md:px-10">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
+      <div suppressHydrationWarning className="mx-auto flex w-full max-w-7xl flex-col gap-8">
         <header className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-gradient-to-r from-zinc-900 to-zinc-950 p-6 shadow-lg shadow-cyan-500/10">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-cyan-300">Administration Inter-Classe</h1>
@@ -42,7 +42,11 @@ export default async function AdminPage() {
           </form>
         </header>
 
-        <AdminPanel teams={data.teams} matches={data.allMatches} />
+        <AdminPanel 
+          teams={data.teams} 
+          matches={data.allMatches} 
+          managers={data.managers as any} 
+        />
         
         <div className="flex justify-center">
           <a

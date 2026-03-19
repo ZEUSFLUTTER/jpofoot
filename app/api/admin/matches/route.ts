@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, addDoc, query, orderBy, Timestamp } from "firebase/firestore";
+import { collection, getDocs, addDoc, query, orderBy, Timestamp, doc, getDoc } from "firebase/firestore";
 import { createMatchSchema } from "@/lib/validators";
 import { MatchStatus } from "@/lib/types";
 
@@ -58,10 +58,37 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Une équipe ne peut pas jouer contre elle-même" }, { status: 400 });
     }
 
+    // Fetch teams to check poules
+    const [teamASnap, teamBSnap] = await Promise.all([
+      getDoc(doc(db, "teams", parsed.data.teamAId)),
+      getDoc(doc(db, "teams", parsed.data.teamBId))
+    ]);
+
+    if (!teamASnap.exists() || !teamBSnap.exists()) {
+      return NextResponse.json({ error: "Une ou les deux équipes sont introuvables" }, { status: 404 });
+    }
+
+    const teamAData = teamASnap.data();
+    const teamBData = teamBSnap.data();
+
+    // Poule Validation
+    const isSpecialMatch = parsed.data.title && (
+      parsed.data.title.toLowerCase().includes("demi") || 
+      parsed.data.title.toLowerCase().includes("final") ||
+      parsed.data.title.toLowerCase().includes("3") // 3rd place
+    );
+
+    if (!isSpecialMatch && teamAData.poule !== teamBData.poule) {
+      return NextResponse.json({ 
+        error: `Match impossible : ${teamAData.name} (${teamAData.poule || 'Sans poule'}) et ${teamBData.name} (${teamBData.poule || 'Sans poule'}) ne sont pas dans la même poule.` 
+      }, { status: 400 });
+    }
+
     const matchData = {
       teamAId: parsed.data.teamAId,
       teamBId: parsed.data.teamBId,
       date: Timestamp.fromDate(new Date(parsed.data.date)),
+      title: parsed.data.title || null,
       status: MatchStatus.PREVU,
       scoreA: 0,
       scoreB: 0,
@@ -71,18 +98,12 @@ export async function POST(request: Request) {
 
     const docRef = await addDoc(collection(db, "matches"), matchData);
 
-    // Fetch teams for the response
-    const [teamASnap, teamBSnap] = await Promise.all([
-      getDocs(query(collection(db, "teams"), orderBy("__name__"), orderBy("name"))).then(s => s.docs.find(d => d.id === parsed.data.teamAId)),
-      getDocs(query(collection(db, "teams"), orderBy("__name__"), orderBy("name"))).then(s => s.docs.find(d => d.id === parsed.data.teamBId))
-    ]);
-
     return NextResponse.json({
       id: docRef.id,
       ...matchData,
       date: matchData.date.toDate(),
-      teamA: teamASnap ? { id: teamASnap.id, ...teamASnap.data() } : null,
-      teamB: teamBSnap ? { id: teamBSnap.id, ...teamBSnap.data() } : null,
+      teamA: { id: teamASnap.id, ...teamAData },
+      teamB: { id: teamBSnap.id, ...teamBData },
     }, { status: 201 });
   } catch (error) {
     console.error("POST Match Error:", error);

@@ -5,7 +5,11 @@
 
 export const MatchStatus = {
   PREVU: "PREVU",
-  LIVE: "LIVE",
+  LIVE: "LIVE", // Mi-temps 1
+  MT: "MT",     // Mi-temps
+  MT2: "MT2",   // Mi-temps 2
+  PROLO: "PROLO", // Prolongations
+  TAB: "TAB",     // Tirs au but
   FINI: "FINI",
 } as const;
 
@@ -16,6 +20,16 @@ export const EventType = {
   ASSIST: "ASSIST",
   YELLOW: "YELLOW",
   RED: "RED",
+  SUB: "SUB",
+  TAB_SCORE: "TAB_SCORE",
+  TAB_MISS: "TAB_MISS",
 } as const;
 
 export type EventType = (typeof EventType)[keyof typeof EventType];
+
+export type Manager = {
+  id: string;
+  firstName: string;
+  password?: string;
+  assignedMatchIds?: string[];
+};

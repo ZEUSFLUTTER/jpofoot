@@ -41,7 +41,7 @@ export default async function Home() {
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-cyan-500/5 to-transparent pointer-events-none" />
           <div className="relative z-10 text-center md:text-left">
             <h1 className="text-2xl md:text-3xl font-bold text-white uppercase leading-tight">
-              Inter-Classe <span className="text-cyan-500">Master</span>
+              inter filiere <span className="text-cyan-500">IAI</span>
             </h1>
             <p className="mt-2 text-zinc-400 font-normal max-w-xl text-sm">
               Vivez l'intensité du tournoi en direct. Scores, classements et performances individuelles en temps réel.
@@ -85,7 +85,7 @@ export default async function Home() {
                       >
                         <div className="mb-3 flex justify-between items-center">
                            <StatusBadge status={match.status as MatchStatus} />
-                           <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 tabular-nums">
+                           <span suppressHydrationWarning className="text-[10px] font-black uppercase tracking-widest text-zinc-500 tabular-nums">
                               {format(new Date(match.date), "HH:mm")}
                            </span>
                         </div>
@@ -115,65 +115,116 @@ export default async function Home() {
           ))}
         </section>
 
-        {/* Standings Table */}
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-6 shadow-xl backdrop-blur-sm">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-5">
-            <h2 className="text-lg font-semibold uppercase text-white">Classement Général</h2>
-            <div className="flex gap-2">
-              <span className="h-2 w-2 rounded-full bg-cyan-500 shadow-lg shadow-cyan-500/50" />
-              <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wide">Calculé en temps réel</p>
+        {/* Standings Section */}
+        <section className="space-y-8">
+          {/* General Standings */}
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-6 shadow-xl backdrop-blur-sm">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-5">
+              <h2 className="text-lg font-black uppercase text-white italic tracking-tighter">Classement Général</h2>
+              <div className="flex gap-2 items-center">
+                <span className="h-2 w-2 rounded-full bg-cyan-500 shadow-lg shadow-cyan-500/50 animate-pulse" />
+                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Live Updates</p>
+              </div>
+            </div>
+            <div className="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 shadow-inner">
+              <table className="min-w-full text-left">
+                <thead>
+                  <tr className="bg-zinc-900/50 border-b border-zinc-800">
+                    <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-zinc-500">Rang</th>
+                    <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-zinc-500">Équipe</th>
+                    <th className="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-zinc-500">Pts</th>
+                    <th className="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-zinc-500">J</th>
+                    <th className="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-zinc-500">V</th>
+                    <th className="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-zinc-500">N</th>
+                    <th className="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-zinc-500">D</th>
+                    <th className="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-zinc-500">BP</th>
+                    <th className="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-zinc-500">BC</th>
+                    <th className="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-zinc-500">Diff</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/50">
+                  {data.standings.map((row, i) => (
+                    <tr key={row.teamId} className="hover:bg-zinc-900 transition-colors group">
+                      <td className="px-4 py-3">
+                         <span className={`flex h-6 w-6 items-center justify-center rounded text-[10px] font-black border ${i < 3 ? "bg-cyan-500/10 border-cyan-500/20 text-cyan-500" : "bg-zinc-900 border-zinc-800 text-zinc-500"}`}>
+                           {i + 1}
+                         </span>
+                      </td>
+                      <td className="px-4 py-3">
+                         <div className="flex items-center gap-2">
+                           <div className="h-6 w-6 rounded bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden">
+                             {row.logoUrl ? <img src={row.logoUrl} className="h-full w-full object-cover" /> : <span className="text-[9px] font-medium text-zinc-600">{row.teamName.charAt(0)}</span>}
+                           </div>
+                           <span className="text-xs font-black uppercase text-white group-hover:text-cyan-400 transition-colors">{row.teamName}</span>
+                         </div>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                         <span className="text-sm font-black text-cyan-400 tabular-nums">{row.points}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center text-xs font-black text-zinc-400 tabular-nums">{row.played}</td>
+                      <td className="px-4 py-3 text-center text-xs font-black text-zinc-300 tabular-nums">{row.wins}</td>
+                      <td className="px-4 py-3 text-center text-xs font-black text-zinc-500 tabular-nums">{row.draws}</td>
+                      <td className="px-4 py-3 text-center text-xs font-black text-zinc-500 tabular-nums">{row.losses}</td>
+                      <td className="px-4 py-3 text-center text-xs font-black text-zinc-400 tabular-nums">{row.goalsFor}</td>
+                      <td className="px-4 py-3 text-center text-xs font-black text-zinc-400 tabular-nums">{row.goalsAgainst}</td>
+                      <td className="px-4 py-3 text-center">
+                         <span className={`text-[10px] font-black tabular-nums ${row.goalDiff > 0 ? "text-emerald-400" : row.goalDiff < 0 ? "text-rose-400" : "text-zinc-500"}`}>
+                           {row.goalDiff > 0 ? `+${row.goalDiff}` : row.goalDiff}
+                         </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-          <div className="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 shadow-inner">
-            <table className="min-w-full text-left">
-              <thead>
-                <tr className="bg-zinc-900/50 border-b border-zinc-800">
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">Rang</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">Équipe</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500">Pts</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500">J</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500">V</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500">N</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500">D</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500">BP</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500">BC</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500">Diff</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-800/50">
-                {data.standings.map((row, i) => (
-                  <tr key={row.teamId} className="hover:bg-zinc-900 transition-colors group">
-                    <td className="px-4 py-3">
-                       <span className={`flex h-6 w-6 items-center justify-center rounded text-xs font-semibold border ${i < 3 ? "bg-cyan-500/10 border-cyan-500/20 text-cyan-500" : "bg-zinc-900 border-zinc-800 text-zinc-500"}`}>
-                         {i + 1}
-                       </span>
-                    </td>
-                    <td className="px-4 py-3">
-                       <div className="flex items-center gap-2">
-                         <div className="h-6 w-6 rounded bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden">
-                           {row.logoUrl ? <img src={row.logoUrl} className="h-full w-full object-cover" /> : <span className="text-[9px] font-medium text-zinc-600">{row.teamName.charAt(0)}</span>}
-                         </div>
-                         <span className="text-sm font-semibold text-white group-hover:text-cyan-400 transition-colors">{row.teamName}</span>
-                       </div>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                       <span className="text-sm font-bold text-cyan-400 tabular-nums">{row.points}</span>
-                    </td>
-                    <td className="px-4 py-3 text-center text-sm font-medium text-zinc-400 tabular-nums">{row.played}</td>
-                    <td className="px-4 py-3 text-center text-sm font-medium text-zinc-300 tabular-nums">{row.wins}</td>
-                    <td className="px-4 py-3 text-center text-sm font-medium text-zinc-500 tabular-nums">{row.draws}</td>
-                    <td className="px-4 py-3 text-center text-sm font-medium text-zinc-500 tabular-nums">{row.losses}</td>
-                    <td className="px-4 py-3 text-center text-sm font-medium text-zinc-400 tabular-nums">{row.goalsFor}</td>
-                    <td className="px-4 py-3 text-center text-sm font-medium text-zinc-400 tabular-nums">{row.goalsAgainst}</td>
-                    <td className="px-4 py-3 text-center">
-                       <span className={`text-xs font-semibold tabular-nums ${row.goalDiff > 0 ? "text-emerald-400" : row.goalDiff < 0 ? "text-rose-400" : "text-zinc-500"}`}>
-                         {row.goalDiff > 0 ? `+${row.goalDiff}` : row.goalDiff}
-                       </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+
+          {/* Group Standings */}
+          <div className="grid gap-8 lg:grid-cols-2">
+            {Object.entries(
+              data.standings.reduce((acc, row) => {
+                const team = data.teams.find(t => t.id === row.teamId);
+                const poule = team?.poule || "Sans Poule";
+                if (!acc[poule]) acc[poule] = [];
+                acc[poule].push(row);
+                return acc;
+              }, {} as Record<string, any[]>)
+            ).sort().map(([poule, rows]) => (
+              <div key={poule} className="rounded-2xl border border-zinc-800 bg-zinc-900/20 p-5">
+                <h3 className="text-sm font-black uppercase italic tracking-tighter text-white mb-4 border-l-4 border-cyan-500 pl-3">
+                  {poule}
+                </h3>
+                <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="bg-zinc-900/50 border-b border-zinc-800">
+                        <th className="px-3 py-2 text-[9px] font-black uppercase text-zinc-500">Rang</th>
+                        <th className="px-3 py-2 text-[9px] font-black uppercase text-zinc-500">Équipe</th>
+                        <th className="px-3 py-2 text-center text-[9px] font-black uppercase text-zinc-500">Pts</th>
+                        <th className="px-3 py-2 text-center text-[9px] font-black uppercase text-zinc-500">Diff</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-900">
+                      {rows.map((row, i) => (
+                        <tr key={row.teamId} className="hover:bg-zinc-900/50 transition-colors group">
+                          <td className="px-3 py-2">
+                             <span className="text-[10px] font-black text-zinc-600">{i + 1}.</span>
+                          </td>
+                          <td className="px-3 py-2 flex items-center gap-2">
+                            <div className="h-4 w-4 rounded-sm bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden">
+                               {row.logoUrl ? <img src={row.logoUrl} className="h-full w-full object-cover" /> : <span className="text-[6px] font-medium text-zinc-600">{row.teamName.charAt(0)}</span>}
+                            </div>
+                            <span className="text-[10px] font-black uppercase text-zinc-300 group-hover:text-white transition-colors truncate max-w-[120px]">{row.teamName}</span>
+                          </td>
+                          <td className="px-3 py-2 text-center text-xs font-black text-cyan-400">{row.points}</td>
+                          <td className="px-3 py-2 text-center text-[10px] font-black text-zinc-500">{row.goalDiff > 0 ? `+${row.goalDiff}` : row.goalDiff}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -266,7 +317,7 @@ export default async function Home() {
         {/* Footer Section */}
         
         <footer className="py-8 text-center border-t border-zinc-900">
-           <p className="text-[10px] font-normal text-zinc-600">© 2026 Inter-Classe Master • IAI Football Foundation</p>
+           <p className="text-[10px] font-normal text-zinc-600">© 2026 inter filiere IAI • IAI Football Foundation</p>
         </footer>
       </div>
     </main>

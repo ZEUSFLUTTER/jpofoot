@@ -10,7 +10,7 @@ const fontPrimary = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Inter-Classe Master",
+  title: "inter filiere IAI",
   description: "Plateforme de suivi en direct d'un tournoi de football inter-classes",
 };
 

@@ -119,7 +119,7 @@ export default function MatchDetailPage() {
           )}
         </div>
 
-        <MatchHeader match={match} />
+        <MatchHeader match={match} onViewCompo={() => setActiveTab("compos")} />
 
         <div className="sticky top-4 z-40 bg-zinc-950/80 pt-2 backdrop-blur-md">
           <MatchTabs
@@ -164,7 +164,7 @@ export default function MatchDetailPage() {
         </div>
 
         <footer className="mt-12 text-center text-xs text-zinc-600 font-bold uppercase tracking-[0.2em] border-t border-zinc-900 pt-8">
-          IAI FOOTBALL TOURNAMENT &copy; 2026
+          inter filiere IAI &copy; 2026
         </footer>
       </div>
     </main>

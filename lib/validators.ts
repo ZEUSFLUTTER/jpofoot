@@ -5,6 +5,7 @@ export const createTeamSchema = z.object({
   name: z.string().min(2),
   logoUrl: z.string().url().optional().or(z.literal("")),
   colors: z.string().optional(),
+  poule: z.string().optional(),
   coachFirstName: z.string().min(2),
   coachLastName: z.string().min(2),
 });
@@ -26,6 +27,7 @@ export const createMatchSchema = z.object({
   teamAId: z.string().min(1),
   teamBId: z.string().min(1),
   date: z.string().datetime(),
+  title: z.string().optional(),
 });
 
 export const updateMatchSchema = createMatchSchema.partial();
@@ -39,7 +41,7 @@ export const createEventSchema = z
   .object({
     type: z.nativeEnum(EventType),
     playerId: z.string().min(1),
-    minute: z.coerce.number().int().min(0).max(130),
+    minute: z.coerce.number().int().min(0).max(130).optional(),
     relatedToId: z.string().optional(),
   })
   .superRefine((value, context) => {

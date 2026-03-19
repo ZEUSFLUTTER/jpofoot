@@ -154,7 +154,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
             
             <div className="rounded-xl bg-cyan-600 p-5 shadow-xl shadow-cyan-600/20 relative overflow-hidden group">
                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
-               <h4 className="text-white font-semibold text-sm mb-0.5">Inter-Classe Master</h4>
+               <h4 className="text-white font-semibold text-sm mb-0.5">inter filiere IAI</h4>
                <p className="text-cyan-100 text-[10px] font-medium">Plateforme Live Officielle</p>
             </div>
           </section>

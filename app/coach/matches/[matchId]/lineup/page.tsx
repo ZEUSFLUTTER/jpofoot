@@ -6,8 +6,9 @@ import { MatchStatus } from "@/lib/types";
 import Link from "next/link";
 import Pitch from "@/components/Pitch";
 import { DEFAULT_POSITIONS, Position } from "@/lib/formations";
+import { ArrowLeft, Save, Shield, Layout, Settings, Trophy } from "lucide-react";
 
-const FORMATIONS = ["4-3-3", "4-4-2", "3-5-2", "5-3-2", "4-2-3-1", "3-4-3"];
+const FORMATIONS = ["4-3-3", "4-4-2", "3-5-2", "5-3-2", "4-2-3-1", "3-4-3", "Personnalisé"];
 
 export default function LineupBuilderPage() {
   const { matchId } = useParams();
@@ -22,6 +23,7 @@ export default function LineupBuilderPage() {
   const [starting11, setStarting11] = useState<string[]>([]);
   const [substitutes, setSubstitutes] = useState<string[]>([]);
   const [positions, setPositions] = useState<Record<string, Position>>({});
+  const [isPublished, setIsPublished] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -33,13 +35,13 @@ export default function LineupBuilderPage() {
           setTeamDoc(data.team);
           setPlayers(data.players);
           
-          // Load existing lineup if available
           const existing = data.match.lineups?.[data.isTeamA ? 'teamA' : 'teamB'];
           if (existing) {
             setFormation(existing.formation || "4-3-3");
             setStarting11(existing.starting11 || []);
             setSubstitutes(existing.substitutes || []);
             setPositions(existing.positions || {});
+            setIsPublished(!!existing.isPublished);
           }
         }
       } catch (err) {
@@ -51,10 +53,10 @@ export default function LineupBuilderPage() {
     fetchData();
   }, [matchId]);
 
-  // When formation changes, we might want to reset positions
-  // But only if current positions are empty or we explicitly reset
   const applyFormation = (newFormation: string) => {
     setFormation(newFormation);
+    if (newFormation === "Personnalisé") return;
+    
     const defaults = DEFAULT_POSITIONS[newFormation];
     const newPositions: Record<string, Position> = { ...positions };
     
@@ -79,11 +81,14 @@ export default function LineupBuilderPage() {
         const newStarting = [...starting11, playerId];
         setStarting11(newStarting);
         
-        // Give default position for the new starter
-        const defaults = DEFAULT_POSITIONS[formation];
-        const index = newStarting.length - 1;
-        if (defaults[index]) {
-          setPositions({ ...positions, [playerId]: defaults[index] });
+        if (formation === "Personnalisé") {
+          setPositions({ ...positions, [playerId]: { x: 50, y: 50 } });
+        } else {
+          const defaults = DEFAULT_POSITIONS[formation];
+          const index = newStarting.length - 1;
+          if (defaults[index]) {
+            setPositions({ ...positions, [playerId]: defaults[index] });
+          }
         }
       } else if (substitutes.length < 5) {
         setSubstitutes([...substitutes, playerId]);
@@ -95,15 +100,16 @@ export default function LineupBuilderPage() {
     setPositions(prev => ({ ...prev, [playerId]: pos }));
   };
 
-  async function handleSave() {
+  async function handleSave(published: boolean = false) {
     setSaving(true);
     try {
       const res = await fetch(`/api/coach/matches/${matchId}/lineup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ formation, starting11, substitutes, positions }),
+        body: JSON.stringify({ formation, starting11, substitutes, positions, published }),
       });
       if (res.ok) {
+        setIsPublished(published);
         router.push("/coach");
         router.refresh();
       }
@@ -124,28 +130,58 @@ export default function LineupBuilderPage() {
     <main className="min-h-screen bg-zinc-950 px-4 py-8 text-zinc-100 md:px-10">
       <div className="mx-auto max-w-7xl space-y-8">
         <header className="flex items-center justify-between">
-          <Link href="/coach" className="text-xs font-bold text-zinc-500 hover:text-white transition-colors uppercase tracking-[0.2em]">← Retour</Link>
-          <h1 className="text-2xl font-black uppercase italic text-white tracking-tight">Composition du Match</h1>
-          <button 
-            disabled={saving || starting11.length === 0}
-            onClick={handleSave}
-            className="rounded-xl bg-cyan-600 px-6 py-2 text-xs font-black uppercase tracking-[0.2em] text-white hover:bg-cyan-500 disabled:opacity-50 transition-all shadow-lg active:scale-95"
-          >
-            {saving ? "Enregistrement..." : "Enregistrer"}
-          </button>
+          <Link href="/coach" className="flex items-center gap-2 text-xs font-bold text-zinc-500 hover:text-white transition-colors uppercase tracking-[0.2em]">
+            <ArrowLeft size={14} />
+            Retour
+          </Link>
+          <h1 className="text-2xl font-black uppercase italic text-white tracking-tight">Composition</h1>
+          <div className="flex items-center gap-4">
+            <div className="hidden md:block">
+              {isPublished ? (
+                <span className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[8px] font-black uppercase tracking-widest text-emerald-500">
+                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Compo Publiée
+                </span>
+              ) : starting11.length > 0 && (
+                <span className="flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-[8px] font-black uppercase tracking-widest text-amber-500">
+                  <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  Brouillon Non Publié
+                </span>
+              )}
+            </div>
+
+            <button 
+              disabled={saving || starting11.length === 0}
+              onClick={() => handleSave(false)}
+              className="flex items-center gap-2 rounded-xl bg-zinc-800 px-6 py-2 text-xs font-black uppercase tracking-[0.2em] text-zinc-300 hover:text-white hover:bg-zinc-700 disabled:opacity-50 transition-all active:scale-95"
+            >
+              <Save size={14} />
+              Enregistrer
+            </button>
+            <button 
+              disabled={saving || starting11.length < 11}
+              onClick={() => handleSave(true)}
+              className="flex items-center gap-2 rounded-xl bg-cyan-600 px-6 py-2 text-xs font-black uppercase tracking-[0.2em] text-white hover:bg-cyan-500 disabled:opacity-50 transition-all shadow-lg shadow-cyan-600/20 active:scale-95"
+            >
+              <Shield size={14} />
+              {saving ? "Publication..." : "Publier"}
+            </button>
+          </div>
         </header>
 
         <div className="grid gap-8 lg:grid-cols-12">
-          {/* Left Column: Rules & Selection */}
           <div className="lg:col-span-5 space-y-6">
             <div className="rounded-3xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-xl">
-              <h2 className="text-lg font-black uppercase italic text-zinc-100 mb-4">Système de Jeu</h2>
+              <div className="flex items-center gap-3 mb-6">
+                <Settings size={18} className="text-cyan-500" />
+                <h2 className="text-lg font-black uppercase italic text-zinc-100">Système de Jeu</h2>
+              </div>
               <div className="grid grid-cols-3 gap-2">
                 {FORMATIONS.map(f => (
                   <button
                     key={f}
                     onClick={() => applyFormation(f)}
-                    className={`rounded-xl border p-3 text-xs font-black uppercase transition-all ${formation === f ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400' : 'border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-600'}`}
+                    className={`rounded-xl border p-3 text-xs font-black uppercase transition-all ${formation === f ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-inner' : 'border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-600'}`}
                   >
                     {f}
                   </button>
@@ -154,7 +190,10 @@ export default function LineupBuilderPage() {
             </div>
 
             <div className="rounded-3xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-xl">
-              <h2 className="text-lg font-black uppercase italic text-zinc-100 mb-4">Joueurs ({players.length})</h2>
+              <div className="flex items-center gap-3 mb-6">
+                <Shield size={18} className="text-cyan-500" />
+                <h2 className="text-lg font-black uppercase italic text-zinc-100">Joueurs ({players.length})</h2>
+              </div>
               <div className="max-h-[500px] overflow-y-auto pr-2 space-y-2 thin-scrollbar">
                 {players.map(player => {
                   const isStarter = starting11.includes(player.id);
@@ -181,7 +220,6 @@ export default function LineupBuilderPage() {
             </div>
           </div>
 
-          {/* Right Column: Interactive Pitch */}
           <div className="lg:col-span-7 space-y-6">
             <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent pointer-events-none" />
@@ -221,4 +259,3 @@ export default function LineupBuilderPage() {
     </main>
   );
 }
-

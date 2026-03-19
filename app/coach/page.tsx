@@ -6,6 +6,7 @@ import Link from "next/link";
 import { CoachAddPlayer } from "./_components/CoachAddPlayer";
 import { CoachPlayersList } from "./_components/CoachPlayersList";
 import { CoachEditTeam } from "./_components/CoachEditTeam";
+import { LogOut, Eye, User, Calendar, Plus, Users, Trophy } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +35,7 @@ export default async function CoachDashboard() {
   const { teamId, coachFirstName, coachLastName } = session;
 
   try {
-    // Fetch Team (no orderBy needed on a doc fetch)
+    // Fetch Team
     const teamSnap = await getDoc(doc(db, "teams", teamId));
 
     if (!teamSnap.exists()) {
@@ -47,7 +48,7 @@ export default async function CoachDashboard() {
 
     const team = { id: teamSnap.id, ...teamSnap.data() as any };
 
-    // Fetch Players — simple where, no orderBy (avoids composite index)
+    // Fetch Players
     const playersSnap = await getDocs(
       query(collection(db, "players"), where("teamId", "==", teamId))
     );
@@ -55,7 +56,7 @@ export default async function CoachDashboard() {
       .map(d => ({ id: d.id, ...d.data() as any }))
       .sort((a, b) => (a.number || 0) - (b.number || 0));
 
-    // Fetch Matches for this team — simple where, no orderBy
+    // Fetch Matches
     const [matchesSnapA, matchesSnapB] = await Promise.all([
       getDocs(query(collection(db, "matches"), where("teamAId", "==", teamId))),
       getDocs(query(collection(db, "matches"), where("teamBId", "==", teamId))),
@@ -81,21 +82,24 @@ export default async function CoachDashboard() {
               <h1 className="text-4xl font-black tracking-tighter text-white uppercase italic">
                 {team.name}
               </h1>
-              <p className="mt-2 text-sm text-zinc-400 font-medium capitalize">
+              <div className="mt-2 flex items-center gap-2 text-sm text-zinc-400 font-medium capitalize">
+                <User size={14} className="text-cyan-500" />
                 Coach: {coachFirstName} {coachLastName}
-              </p>
+              </div>
               <CoachEditTeam team={team} />
             </div>
 
             <div className="flex items-center gap-4 mt-6 md:mt-0">
-              <Link href="/" className="text-xs font-bold text-zinc-500 hover:text-white transition-colors uppercase tracking-widest">
+              <Link href="/" className="flex items-center gap-2 text-xs font-bold text-zinc-500 hover:text-white transition-colors uppercase tracking-widest">
+                <Eye size={14} />
                 Voir Public
               </Link>
               <form action={handleLogout}>
                 <button
                   type="submit"
-                  className="rounded-xl border border-zinc-800 bg-zinc-950 px-6 py-2 text-xs font-black uppercase tracking-widest text-zinc-400 hover:bg-zinc-900 hover:text-white transition-all shadow-lg active:scale-95"
+                  className="flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-950 px-6 py-2 text-xs font-black uppercase tracking-widest text-zinc-400 hover:bg-zinc-900 hover:text-white transition-all shadow-lg active:scale-95"
                 >
+                  <LogOut size={14} />
                   Déconnexion
                 </button>
               </form>
@@ -103,20 +107,30 @@ export default async function CoachDashboard() {
           </header>
 
           <section className="rounded-3xl border border-zinc-800 bg-zinc-900/30 p-8 shadow-xl">
-            <h2 className="text-xl font-black uppercase tracking-tight text-white italic mb-6">Ajouter un Joueur</h2>
-            <CoachAddPlayer teamId={teamId} />
+            <div className="flex items-center gap-3 mb-6">
+              <Plus size={20} className="text-cyan-500" />
+              <h2 className="text-xl font-black uppercase tracking-tight text-white italic">Ajouter un Joueur</h2>
+            </div>
+            <CoachAddPlayer teamId={teamId} players={players} />
           </section>
 
           <div className="grid gap-8 lg:grid-cols-3">
             <section className="lg:col-span-2 space-y-8">
               <div className="rounded-3xl border border-zinc-800 bg-zinc-900/30 p-8 shadow-xl">
+                 <div className="flex items-center gap-3 mb-6">
+                   <Users size={20} className="text-cyan-500" />
+                   <h2 className="text-xl font-black uppercase tracking-tight text-white italic">Gestion de l'Effectif</h2>
+                 </div>
                 <CoachPlayersList players={players} />
               </div>
             </section>
 
             <section className="space-y-8">
               <div className="rounded-3xl border border-zinc-800 bg-zinc-900/30 p-8 shadow-xl h-full">
-                <h2 className="text-xl font-black uppercase tracking-tight text-white italic mb-6">Prochains Matchs</h2>
+                <div className="flex items-center gap-3 mb-6">
+                  <Calendar size={20} className="text-cyan-500" />
+                  <h2 className="text-xl font-black uppercase tracking-tight text-white italic">Prochains Matchs</h2>
+                </div>
                 <div className="space-y-4">
                   {upcomingMatches.length === 0 ? (
                     <div className="text-center py-10">
@@ -135,7 +149,9 @@ export default async function CoachDashboard() {
                         >
                           <div className="flex justify-between items-center mb-4">
                             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{dateStr}</span>
-                            <span className="text-cyan-500 text-xs font-black uppercase italic group-hover:translate-x-1 transition-transform">Préparer →</span>
+                            <span className="text-cyan-500 text-xs font-black uppercase italic group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                              Préparer <Trophy size={10} />
+                            </span>
                           </div>
                           <div className="flex items-center justify-center gap-4">
                             <span className={`flex-1 text-center font-bold text-sm ${match.teamAId === teamId ? "text-cyan-400" : "text-zinc-500"}`}>

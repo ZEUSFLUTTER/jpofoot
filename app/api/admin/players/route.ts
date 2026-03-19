@@ -58,6 +58,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
     }
 
+    // Duplicate Check
+    const existingPlayersSnap = await getDocs(query(
+      collection(db, "players"),
+      where("teamId", "==", parsed.data.teamId)
+    ));
+
+    const isDuplicate = existingPlayersSnap.docs.some(doc => {
+      const d = doc.data();
+      const sameName = d.firstName.toLowerCase() === parsed.data.firstName.toLowerCase() && 
+                       d.lastName.toLowerCase() === parsed.data.lastName.toLowerCase();
+      const sameNumber = Number(d.number) === Number(parsed.data.number);
+      return sameName || sameNumber;
+    });
+
+    if (isDuplicate) {
+      return NextResponse.json({ 
+        error: "Un joueur avec ce nom ou ce numéro existe déjà dans cette équipe." 
+      }, { status: 400 });
+    }
+
     const playerData = {
       firstName: parsed.data.firstName,
       lastName: parsed.data.lastName,
