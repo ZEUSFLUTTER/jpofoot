@@ -49,6 +49,7 @@ export async function DELETE(request: Request, context: Context) {
       const playerUpdate: any = { "stats.updatedAt": Timestamp.now() };
 
       if (event.type === EventType.GOAL) playerUpdate["stats.goals"] = increment(-1);
+      if (event.type === EventType.ASSIST) playerUpdate["stats.assists"] = increment(-1);
       if (event.type === EventType.YELLOW) playerUpdate["stats.yellowCards"] = increment(-1);
       if (event.type === EventType.RED) {
         playerUpdate["stats.redCards"] = increment(-1);
