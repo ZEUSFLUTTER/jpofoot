@@ -15,6 +15,16 @@ export const MatchStatus = {
 
 export type MatchStatus = (typeof MatchStatus)[keyof typeof MatchStatus];
 
+export const isMatchLive = (status: MatchStatus) => {
+  return (
+    status === MatchStatus.LIVE ||
+    status === MatchStatus.MT ||
+    status === MatchStatus.MT2 ||
+    status === MatchStatus.PROLO ||
+    status === MatchStatus.TAB
+  );
+};
+
 export const EventType = {
   GOAL: "GOAL",
   ASSIST: "ASSIST",

@@ -9,9 +9,10 @@ interface MatchTabsProps {
   currentTab: MatchTab;
   onTabChange: (tab: MatchTab) => void;
   showLiveTabs: boolean;
+  isLive?: boolean;
 }
 
-export function MatchTabs({ currentTab, onTabChange, showLiveTabs }: MatchTabsProps) {
+export function MatchTabs({ currentTab, onTabChange, showLiveTabs, isLive = false }: MatchTabsProps) {
   const tabs = [
     { id: "analyse", label: "Analyse" },
     { id: "compos", label: "Compos" },
@@ -19,7 +20,9 @@ export function MatchTabs({ currentTab, onTabChange, showLiveTabs }: MatchTabsPr
 
   if (showLiveTabs) {
     tabs.push({ id: "events", label: "Évènements" });
-    tabs.push({ id: "stats", label: "Statistiques" });
+    if (!isLive) {
+      tabs.push({ id: "stats", label: "Statistiques" });
+    }
   }
 
   return (

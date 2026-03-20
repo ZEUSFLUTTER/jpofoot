@@ -4,7 +4,7 @@ import { EventType, MatchStatus, Manager } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, Calendar, Cloud, Trash2, Edit3, PlusCircle, CheckCircle2, History, Timer, Trophy, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Users, Calendar, Cloud, Trash2, Edit3, PlusCircle, CheckCircle2, History, Timer, Trophy, ShieldCheck, X } from "lucide-react";
 
 const POSITIONS = [
   "Gardien de but (GB)",
@@ -552,7 +552,7 @@ export function AdminPanel({ teams, matches, managers }: Props) {
         {message && (
           <div className="fixed top-8 right-8 z-[110] rounded-2xl bg-cyan-500/10 border border-cyan-500/20 px-6 py-3 flex items-center gap-4 animate-in fade-in slide-in-from-top-4 backdrop-blur-md">
             <p className="text-xs font-black uppercase tracking-widest text-cyan-400">{message}</p>
-            <button onClick={() => setMessage("")} className="text-zinc-500 hover:text-white transition-colors">✕</button>
+            <button onClick={() => setMessage("")} className="text-zinc-500 hover:text-white transition-colors"><X size={16} /></button>
           </div>
         )}
 
@@ -1187,7 +1187,7 @@ export function AdminPanel({ teams, matches, managers }: Props) {
            <form action={(fd) => startTransition(() => handleUpdateTeam(fd))} className="w-full max-w-lg bg-zinc-950 border border-zinc-800 p-10 rounded-3xl space-y-6">
               <div className="flex justify-between items-center">
                  <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">Éditer Équipe</h2>
-                 <button type="button" onClick={() => setEditingTeam(null)} className="text-zinc-500 hover:text-white">✕</button>
+                 <button type="button" onClick={() => setEditingTeam(null)} className="text-zinc-500 hover:text-white"><X size={16} /></button>
               </div>
               <input name="name" required defaultValue={editingTeam.name} className="w-full bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm outline-none focus:border-cyan-500" />
               <div className="grid grid-cols-2 gap-4">
@@ -1214,7 +1214,7 @@ export function AdminPanel({ teams, matches, managers }: Props) {
            <form action={(fd) => startTransition(() => handleUpdatePlayer(fd))} className="w-full max-w-lg bg-zinc-950 border border-zinc-800 p-10 rounded-3xl space-y-6">
               <div className="flex justify-between items-center">
                  <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">Éditer Joueur</h2>
-                 <button type="button" onClick={() => setEditingPlayer(null)} className="text-zinc-500 hover:text-white">✕</button>
+                 <button type="button" onClick={() => setEditingPlayer(null)} className="text-zinc-500 hover:text-white"><X size={16} /></button>
               </div>
               <div className="grid grid-cols-2 gap-4">
                  <input name="firstName" required defaultValue={editingPlayer.firstName} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm focus:border-emerald-500 outline-none" />
@@ -1240,14 +1240,25 @@ export function AdminPanel({ teams, matches, managers }: Props) {
            <form action={(fd) => startTransition(() => handleUpdateMatch(fd))} className="w-full max-w-lg bg-zinc-950 border border-zinc-800 p-10 rounded-3xl space-y-6">
               <div className="flex justify-between items-center">
                  <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">Éditer Match</h2>
-                 <button type="button" onClick={() => setEditingMatch(null)} className="text-zinc-500 hover:text-white">✕</button>
+                 <button type="button" onClick={() => setEditingMatch(null)} className="text-zinc-500 hover:text-white"><X size={16} /></button>
               </div>
-              <select name="title" defaultValue={editingMatch.title || ""} className="w-full bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-xs font-bold uppercase text-white outline-none focus:border-cyan-500">
-                 <option value="Match de poule">Match de poule</option>
-                 <option value="Demi-finale">Demi-finale</option>
-                 <option value="Finale">Finale</option>
-                 <option value="Match Amical">Match Amical</option>
-              </select>
+              <div className="grid grid-cols-2 gap-4">
+                 <select name="title" defaultValue={editingMatch.title || ""} className="w-full bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-xs font-bold uppercase text-white outline-none focus:border-cyan-500">
+                    <option value="Match de poule">Match de poule</option>
+                    <option value="Demi-finale">Demi-finale</option>
+                    <option value="Finale">Finale</option>
+                    <option value="Match Amical">Match Amical</option>
+                 </select>
+                 <select name="status" defaultValue={editingMatch.status} disabled={editingMatch.status === "FINI"} className="w-full bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-xs font-bold uppercase text-white outline-none focus:border-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <option value="PREVU">Prévu</option>
+                    <option value="LIVE">Live - 1ère MT</option>
+                    <option value="MT">Live - Mi-temps</option>
+                    <option value="MT2">Live - 2ème MT</option>
+                    <option value="PROLO">Live - Prolongations</option>
+                    <option value="TAB">Live - Tirs au but</option>
+                    <option value="FINI">Fini</option>
+                 </select>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                  <select name="teamAId" defaultValue={editingMatch.teamAId} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-[10px] font-bold uppercase text-white outline-none">
                     {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -1268,7 +1279,7 @@ export function AdminPanel({ teams, matches, managers }: Props) {
            <form action={(fd) => startTransition(() => handleUpdateManager(fd))} className="w-full max-w-lg bg-zinc-950 border border-zinc-800 p-10 rounded-3xl space-y-6">
               <div className="flex justify-between items-center">
                  <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">Éditer Gestionnaire</h2>
-                 <button type="button" onClick={() => setEditingManager(null)} className="text-zinc-500 hover:text-white">✕</button>
+                 <button type="button" onClick={() => setEditingManager(null)} className="text-zinc-500 hover:text-white"><X size={16} /></button>
               </div>
               <div className="space-y-4">
                  <div className="space-y-2">

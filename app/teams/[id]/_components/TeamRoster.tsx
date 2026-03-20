@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PlayerProfileModal } from "@/components/PlayerProfileModal";
+import { Target, Shield } from "lucide-react";
 
 interface TeamRosterProps {
   players: any[];
@@ -49,11 +50,15 @@ export function TeamRoster({ players, teamName }: TeamRosterProps) {
                 <div className="flex gap-3 p-2 rounded-lg bg-zinc-950/50 border border-zinc-800/50">
                   <div className="text-center flex-1">
                     <p className="text-[9px] font-medium text-zinc-500 uppercase mb-0.5">Buts</p>
-                    <p className="text-xs font-semibold text-emerald-400">⚽ {player.stats.goals}</p>
+                    <p className="flex items-center justify-center gap-1 text-xs font-semibold text-emerald-400">
+                      <Target size={12} /> {player.stats.goals}
+                    </p>
                   </div>
                   <div className="text-center flex-1 border-x border-zinc-800/50 px-2">
                     <p className="text-[9px] font-medium text-zinc-500 uppercase mb-0.5">Assists</p>
-                    <p className="text-xs font-semibold text-cyan-400">🎯 {player.stats.assists}</p>
+                    <p className="flex items-center justify-center gap-1 text-xs font-semibold text-cyan-400">
+                      <Shield size={12} /> {player.stats.assists}
+                    </p>
                   </div>
                   <div className="text-center flex-1">
                     <p className="text-[9px] font-medium text-zinc-500 uppercase mb-0.5">Cartons</p>

@@ -8,6 +8,7 @@ export const createTeamSchema = z.object({
   poule: z.string().optional(),
   coachFirstName: z.string().min(2),
   coachLastName: z.string().min(2),
+  coachPhotoUrl: z.string().url().optional().or(z.literal("")),
 });
 
 export const updateTeamSchema = createTeamSchema.partial();

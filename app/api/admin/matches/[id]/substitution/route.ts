@@ -23,6 +23,9 @@ export async function POST(request: Request, context: Context) {
     if (!matchSnap.exists()) {
       return NextResponse.json({ error: "Match introuvable" }, { status: 404 });
     }
+    if (matchSnap.data().status === "FINI") {
+      return NextResponse.json({ error: "Match terminé" }, { status: 400 });
+    }
 
     const result = await runTransaction(db, async (transaction) => {
       const eventRef = doc(collection(db, "matches", id, "events"));

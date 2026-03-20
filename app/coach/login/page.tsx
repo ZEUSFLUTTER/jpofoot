@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 export default function CoachLoginPage() {
   const [firstName, setFirstName] = useState("");
@@ -107,9 +108,9 @@ export default function CoachLoginPage() {
           </button>
         </form>
 
-        <div className="text-center pt-4">
-          <a href="/" className="text-[10px] font-bold text-zinc-600 hover:text-cyan-400 uppercase tracking-widest transition-colors">
-            ← Retour au site public
+        <div className="text-center pt-4 flex justify-center">
+          <a href="/" className="flex items-center gap-2 text-[10px] font-bold text-zinc-600 hover:text-cyan-400 uppercase tracking-widest transition-colors">
+            <ArrowLeft size={14} /> Retour au site public
           </a>
         </div>
       </div>

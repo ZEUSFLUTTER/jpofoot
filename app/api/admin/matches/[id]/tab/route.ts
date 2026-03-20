@@ -29,6 +29,9 @@ export async function POST(request: Request, context: Context) {
     if (!matchSnap.exists() || !playerSnap.exists()) {
       return NextResponse.json({ error: "Données introuvables" }, { status: 404 });
     }
+    if (matchSnap.data().status === "FINI") {
+      return NextResponse.json({ error: "Match terminé" }, { status: 400 });
+    }
 
     const matchData = matchSnap.data();
     const playerData = playerSnap.data();

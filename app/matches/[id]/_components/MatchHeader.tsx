@@ -2,6 +2,7 @@ import { Shield, Video } from "lucide-react";
 import { MatchStatus } from "@/lib/types";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { LiveTimer } from "@/components/LiveTimer";
 
 interface MatchHeaderProps {
   match: any;
@@ -43,7 +44,7 @@ export function MatchHeader({ match, onViewCompo }: MatchHeaderProps) {
                {isLive && (
                  <div className="flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 border border-emerald-500/20">
                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-                   <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">{match.liveMinute}'</span>
+                   <LiveTimer status={match.status} baseMinute={match.liveMinute || 0} timerStartedAt={match.timerStartedAt} />
                  </div>
                )}
             </div>

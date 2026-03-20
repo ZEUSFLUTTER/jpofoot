@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const POSITIONS = [
@@ -104,7 +105,7 @@ export function CoachEditPlayer({ player, onCancel }: { player: Player; onCancel
     <div className="rounded-2xl border border-cyan-500/50 bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in duration-300">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl font-black uppercase italic tracking-tighter text-white">Modifier le Joueur</h3>
-        <button onClick={onCancel} className="text-zinc-500 hover:text-white transition-colors">✕</button>
+        <button onClick={onCancel} className="text-zinc-500 hover:text-white transition-colors"><X size={16} /></button>
       </div>
 
       {message && (

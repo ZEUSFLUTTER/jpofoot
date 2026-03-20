@@ -8,8 +8,9 @@ import { EventsTimeline } from "./_components/EventsTimeline";
 import { MatchStats } from "./_components/MatchStats";
 import { PreMatchInfo } from "./_components/PreMatchInfo";
 import { Lineups } from "./_components/Lineups";
-import { MatchStatus } from "@/lib/types";
+import { MatchStatus, isMatchLive } from "@/lib/types";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 const LIVE_POLL_INTERVAL = 15000; // 15 seconds
 
@@ -32,7 +33,7 @@ export default function MatchDetailPage() {
         setLastUpdated(new Date());
         if (!silent) {
           // Only set the default tab on first load
-          if (json.match.status === MatchStatus.FINI || json.match.status === MatchStatus.LIVE) {
+          if (json.match.status === MatchStatus.FINI || isMatchLive(json.match.status)) {
             setActiveTab("events");
           } else {
             setActiveTab("analyse");
@@ -55,7 +56,7 @@ export default function MatchDetailPage() {
   // Auto-polling for live matches
   useEffect(() => {
     if (!data?.match) return;
-    if (data.match.status !== MatchStatus.LIVE) return;
+    if (!isMatchLive(data.match.status)) return;
 
     const interval = setInterval(() => {
       fetchMatch(true);
@@ -86,7 +87,7 @@ export default function MatchDetailPage() {
 
   const { match, h2hMatches, teamAForm, teamBForm } = data;
   const showLiveTabs = match.status !== MatchStatus.PREVU;
-  const isLive = match.status === MatchStatus.LIVE;
+  const isLive = isMatchLive(match.status);
 
   return (
     <main className="min-h-screen bg-zinc-950 px-4 py-8 text-zinc-100 md:px-10 selection:bg-cyan-500/30">
@@ -94,7 +95,7 @@ export default function MatchDetailPage() {
 
         <div className="flex items-center justify-between">
           <Link href="/" className="group flex w-fit items-center gap-2 text-sm font-bold text-zinc-500 hover:text-cyan-400 transition-all uppercase tracking-widest">
-            <span className="transition-transform group-hover:-translate-x-1">←</span>
+            <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
             Tableau de Bord
           </Link>
           
@@ -126,6 +127,7 @@ export default function MatchDetailPage() {
             currentTab={activeTab}
             onTabChange={setActiveTab}
             showLiveTabs={showLiveTabs}
+            isLive={isLive}
           />
         </div>
 

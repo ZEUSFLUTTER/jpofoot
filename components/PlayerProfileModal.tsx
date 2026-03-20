@@ -1,6 +1,6 @@
 "use client";
 
-import { Shield, Target, AlertTriangle } from "lucide-react";
+import { Shield, Target, AlertTriangle, X } from "lucide-react";
 
 interface Player {
   id: string;
@@ -51,9 +51,9 @@ export function PlayerProfileModal({ player, teamName, onClose }: PlayerProfileM
         {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-zinc-400 hover:text-white hover:bg-black/80 transition-all font-black text-xs"
+          className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-zinc-400 hover:text-white hover:bg-black/80 transition-all"
         >
-          ✕
+          <X size={16} />
         </button>
 
         <div className="relative z-10 p-8 pt-12 flex flex-col items-center">

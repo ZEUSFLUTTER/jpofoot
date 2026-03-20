@@ -4,6 +4,7 @@ import { fr } from "date-fns/locale";
 import { getDashboardData } from "@/lib/tournament";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Target, Shield } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -98,9 +99,9 @@ export default async function Home() {
                         </div>
                         
                         <div className="mt-3 flex flex-wrap gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
-                           {match.events.filter(e => e.type === "GOAL").slice(0, 3).map(e => (
-                             <span key={e.id} className="text-[9px] font-bold text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded uppercase tracking-tighter">
-                               ⚽ {e.player.lastName} ({e.minute}')
+                           {match.events.filter((e: any) => e.type === "GOAL").slice(0, 3).map((e: any) => (
+                             <span key={e.id} className="flex items-center gap-1 text-[9px] font-bold text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded uppercase tracking-tighter">
+                               <Target size={10} className="text-emerald-400" /> {e.player.lastName} ({e.minute}')
                              </span>
                            ))}
                         </div>
@@ -231,13 +232,17 @@ export default async function Home() {
         {/* Individual Stats Grid */}
         <div className="grid gap-6 md:grid-cols-3">
           {[
-            { title: "Meilleurs Buteurs", items: data.topScorers, icon: "⚽", val: "goals", color: "text-emerald-400" },
-            { title: "Meilleurs Passeurs", items: data.topAssists, icon: "🎯", val: "assists", color: "text-cyan-400" },
-            { title: "Discipline", items: data.discipline, icon: "🟨", type: "cards" },
+            { title: "Meilleurs Buteurs", items: data.topScorers, val: "goals", color: "text-emerald-400" },
+            { title: "Meilleurs Passeurs", items: data.topAssists, val: "assists", color: "text-cyan-400" },
+            { title: "Discipline", items: data.discipline, type: "cards" },
           ].map((stat) => (
-            <section key={stat.title} className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-5 shadow-xl backdrop-blur-sm">
+            <section key={stat.title} className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-5 shadow-xl backdrop-blur-sm hover:border-cyan-500/20 transition-all duration-300">
               <h2 className="text-sm font-semibold uppercase text-white mb-4 flex items-center gap-2">
-                <span className="bg-zinc-800 p-1.5 rounded-lg border border-zinc-700 text-sm">{stat.icon}</span>
+                <span className="bg-zinc-800 p-1.5 rounded-lg border border-zinc-700 text-sm flex items-center justify-center">
+                  {stat.title === "Meilleurs Buteurs" && <Target size={16} className="text-emerald-400" />}
+                  {stat.title === "Meilleurs Passeurs" && <Shield size={16} className="text-cyan-400" />}
+                  {stat.title === "Discipline" && <div className="h-3 w-2.5 rounded-sm bg-amber-400 border border-amber-500/50 shadow-sm" />}
+                </span>
                 {stat.title}
               </h2>
               <div className="space-y-2">

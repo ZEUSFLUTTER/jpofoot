@@ -2,6 +2,7 @@ import { getTeamById } from "@/lib/tournament";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { TeamRoster } from "./_components/TeamRoster";
 
 export const dynamic = "force-dynamic";
@@ -37,9 +38,14 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
               {team.name}
             </h1>
             <div className="mt-5 flex flex-wrap items-center justify-center md:justify-start gap-4">
-              <div className="bg-zinc-800/50 backdrop-blur-md px-4 py-2 rounded-xl border border-zinc-700/50">
-                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-1">Entraîneur</p>
-                <p className="text-sm font-bold text-white uppercase">{team.coachFirstName} {team.coachLastName}</p>
+              <div className="flex items-center gap-3 bg-zinc-800/50 backdrop-blur-md px-4 py-2 rounded-xl border border-zinc-700/50">
+                {team.coachPhotoUrl && (
+                  <img src={team.coachPhotoUrl} alt="Coach" className="h-10 w-10 rounded-full object-cover border-2 border-zinc-700 shadow-xl" />
+                )}
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-1">Entraîneur</p>
+                  <p className="text-sm font-bold text-white uppercase">{team.coachFirstName} {team.coachLastName}</p>
+                </div>
               </div>
               {team.colors && (
                 <div className="bg-zinc-800/50 backdrop-blur-md px-4 py-2 rounded-xl border border-zinc-700/50">
@@ -51,8 +57,8 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
           </div>
 
           <div className="md:self-start">
-             <a href="/" className="group px-6 py-2.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-xs font-black text-zinc-500 hover:text-white hover:border-zinc-700 transition-all shadow-xl active:scale-95 uppercase tracking-widest">
-               <span className="inline-block transition-transform group-hover:-translate-x-1 mr-2">←</span>
+             <a href="/" className="group px-6 py-2.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-xs font-black text-zinc-500 hover:text-white hover:border-zinc-700 transition-all shadow-xl active:scale-95 uppercase tracking-widest flex items-center w-fit">
+               <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-1 mr-2" />
                Accueil
              </a>
           </div>

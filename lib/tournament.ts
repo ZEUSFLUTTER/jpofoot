@@ -378,6 +378,7 @@ export async function getTeamById(id: string) {
       colors: data.colors || null,
       coachFirstName: data.coachFirstName || "",
       coachLastName: data.coachLastName || "",
+      coachPhotoUrl: data.coachPhotoUrl || null,
       players,
       lastMatches: hydratedMatches
     };

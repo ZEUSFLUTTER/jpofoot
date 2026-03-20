@@ -154,12 +154,20 @@ export function ManagerControlRoom({ match, players, managerName, showBackButton
            
            {/* Column 1: Match Info & Status */}
            <div className="space-y-8 lg:col-span-2">
+              {match.status === MatchStatus.FINI && (
+                <div className="p-6 rounded-[24px] border border-rose-500/20 bg-rose-500/10 text-center shadow-lg">
+                  <p className="text-sm font-black text-rose-500 uppercase tracking-[0.2em]">Match Terminé et Finalisé</p>
+                  <p className="text-[10px] text-rose-400 mt-2 font-bold uppercase tracking-widest">Aucune modification n'est permise sur ce match.</p>
+                </div>
+              )}
+              
               <div className="p-10 rounded-[40px] bg-zinc-950 border border-zinc-900 shadow-2xl relative overflow-hidden group">
                  <div className="absolute top-0 right-0 p-6">
                     <select 
                       value={match.status}
+                      disabled={match.status === MatchStatus.FINI}
                       onChange={(e) => startTransition(() => handleUpdateStatus(e.target.value as MatchStatus))}
-                      className="bg-zinc-900 border border-zinc-800 text-[10px] font-black uppercase px-4 py-2 rounded-full outline-none text-cyan-500 focus:border-cyan-500 transition-all cursor-pointer"
+                      className="bg-zinc-900 border border-zinc-800 text-[10px] font-black uppercase px-4 py-2 rounded-full outline-none text-cyan-500 focus:border-cyan-500 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                        {Object.values(MatchStatus).map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
@@ -270,9 +278,10 @@ export function ManagerControlRoom({ match, players, managerName, showBackButton
                    </div>
                  )}
 
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* Substitution */}
-                    <div className="p-8 rounded-[32px] bg-zinc-900/40 border border-zinc-900 space-y-6">
+                 {match.status !== MatchStatus.FINI && (
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {/* Substitution */}
+                      <div className="p-8 rounded-[32px] bg-zinc-900/40 border border-zinc-900 space-y-6">
                        <div className="flex items-center gap-3 border-b border-zinc-800 pb-4">
                           <PlusCircle size={20} className="text-emerald-500" />
                           <h4 className="text-xs font-black uppercase tracking-widest text-zinc-300">Remplacement</h4>
@@ -314,6 +323,7 @@ export function ManagerControlRoom({ match, players, managerName, showBackButton
                        </form>
                     </div>
                  </div>
+                 )}
               </div>
            </div>
 
@@ -348,29 +358,31 @@ export function ManagerControlRoom({ match, players, managerName, showBackButton
                  </div>
               </div>
 
-              <div className="p-8 rounded-[32px] bg-rose-500/5 border border-rose-500/20 space-y-6">
-                 <div className="flex items-center gap-3 justify-center mb-2">
-                    <CheckCircle2 size={16} className="text-rose-500" />
-                    <h4 className="text-xs font-black uppercase tracking-widest text-rose-500">Clôture Finale</h4>
-                 </div>
-                 <form action={(fd) => startTransition(() => handleFinalize(fd))} className="space-y-4">
-                    <div className="flex justify-center items-center gap-6">
-                       <div className="text-center">
-                          <p className="text-[8px] font-black uppercase text-zinc-600 mb-1">TEAM A</p>
-                          <input name="scoreA" type="number" defaultValue={match.scoreA} className="w-20 bg-zinc-950 border border-zinc-800 p-4 rounded-2xl text-center font-black text-xl" />
-                       </div>
-                       <span className="text-zinc-800 pt-4">-</span>
-                       <div className="text-center">
-                          <p className="text-[8px] font-black uppercase text-zinc-600 mb-1">TEAM B</p>
-                          <input name="scoreB" type="number" defaultValue={match.scoreB} className="w-20 bg-zinc-950 border border-zinc-800 p-4 rounded-2xl text-center font-black text-xl" />
-                       </div>
-                    </div>
-                    <button className="w-full bg-rose-600 hover:bg-rose-500 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-lg active:scale-95 transition-all">
-                       Finaliser & Fermer
-                    </button>
-                    <p className="text-[8px] text-zinc-600 text-center uppercase font-bold tracking-widest">Cette action déconnectera la régie</p>
-                 </form>
-              </div>
+              {match.status !== MatchStatus.FINI && (
+                <div className="p-8 rounded-[32px] bg-rose-500/5 border border-rose-500/20 space-y-6">
+                   <div className="flex items-center gap-3 justify-center mb-2">
+                      <CheckCircle2 size={16} className="text-rose-500" />
+                      <h4 className="text-xs font-black uppercase tracking-widest text-rose-500">Clôture Finale</h4>
+                   </div>
+                   <form action={(fd) => startTransition(() => handleFinalize(fd))} className="space-y-4">
+                      <div className="flex justify-center items-center gap-6">
+                         <div className="text-center">
+                            <p className="text-[8px] font-black uppercase text-zinc-600 mb-1">TEAM A</p>
+                            <input name="scoreA" type="number" defaultValue={match.scoreA} className="w-20 bg-zinc-950 border border-zinc-800 p-4 rounded-2xl text-center font-black text-xl" />
+                         </div>
+                         <span className="text-zinc-800 pt-4">-</span>
+                         <div className="text-center">
+                            <p className="text-[8px] font-black uppercase text-zinc-600 mb-1">TEAM B</p>
+                            <input name="scoreB" type="number" defaultValue={match.scoreB} className="w-20 bg-zinc-950 border border-zinc-800 p-4 rounded-2xl text-center font-black text-xl" />
+                         </div>
+                      </div>
+                      <button className="w-full bg-rose-600 hover:bg-rose-500 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-lg active:scale-95 transition-all">
+                         Finaliser & Fermer
+                      </button>
+                      <p className="text-[8px] text-zinc-600 text-center uppercase font-bold tracking-widest">Cette action déconnectera la régie et bloquera définitivement le match.</p>
+                   </form>
+                </div>
+              )}
            </div>
 
         </div>

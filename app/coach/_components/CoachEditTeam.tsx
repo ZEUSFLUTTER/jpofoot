@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 type Team = {
@@ -71,7 +72,7 @@ export function CoachEditTeam({ team }: { team: Team }) {
       <div className="w-full max-w-lg rounded-2xl border border-cyan-500/50 bg-zinc-950 p-6 shadow-2xl">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-black uppercase italic tracking-tighter text-white">Modifier le Club</h3>
-          <button onClick={() => setEditing(false)} className="text-zinc-500 hover:text-white transition-colors">✕</button>
+          <button onClick={() => setEditing(false)} className="text-zinc-500 hover:text-white transition-colors"><X size={16} /></button>
         </div>
 
         {message && (

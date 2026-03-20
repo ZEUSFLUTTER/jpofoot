@@ -1,5 +1,6 @@
 import { EventType } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { Target, RefreshCw } from "lucide-react";
 
 interface EventsTimelineProps {
   events: any[];
@@ -20,7 +21,12 @@ export function EventsTimeline({ events, teamAId, teamBId }: EventsTimelineProps
     <div className="relative space-y-6 before:absolute before:left-1/2 before:top-0 before:h-full before:w-0.5 before:-translate-x-1/2 before:bg-zinc-800">
       {events.map((event, idx) => {
         const isTeamA = event.player.teamId === teamAId;
-        const Icon = event.type === "GOAL" ? "⚽" : event.type === "YELLOW" ? "🟨" : event.type === "RED" ? "🟥" : "🔄";
+        
+        let EventIcon = null;
+        if (event.type === "GOAL") EventIcon = <Target size={16} className="text-emerald-400" />;
+        else if (event.type === "YELLOW") EventIcon = <div className="h-4 w-3 rounded-sm bg-amber-400 shadow-xl border border-amber-500/50" />;
+        else if (event.type === "RED") EventIcon = <div className="h-4 w-3 rounded-sm bg-rose-500 shadow-xl border border-rose-600/50" />;
+        else EventIcon = <RefreshCw size={16} className="text-cyan-400" />;
 
         return (
           <div key={event.id} className={cn(
@@ -58,7 +64,7 @@ export function EventsTimeline({ events, teamAId, teamBId }: EventsTimelineProps
 
             {/* Icon & Time */}
             <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-4 border-zinc-950 bg-zinc-800 shadow-xl group">
-              <span className="text-lg transition-transform group-hover:scale-125">{Icon}</span>
+              <div className="transition-transform group-hover:scale-125 flex items-center justify-center">{EventIcon}</div>
               <span className="absolute -bottom-4 text-[10px] font-bold text-zinc-500">{event.minute}'</span>
             </div>
 

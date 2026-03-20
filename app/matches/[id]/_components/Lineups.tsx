@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import Pitch from "@/components/Pitch";
-import { Users, Shield, Layout, Settings } from "lucide-react";
+import { Users, Shield, Layout, Settings, User } from "lucide-react";
 import { useState } from "react";
 import { PlayerProfileModal } from "@/components/PlayerProfileModal";
 
@@ -105,51 +105,79 @@ export function Lineups({ teamA, teamB, match }: LineupsProps) {
           ))}
         </div>
       ) : (
-        <div className="space-y-10">
-          {/* Pitch Visualization */}
-          <div className="relative group">
-            <div className="absolute -inset-4 bg-gradient-to-b from-cyan-500/5 to-transparent blur-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-            <div className="relative rounded-[2.5rem] border border-zinc-800 bg-zinc-950/50 p-8 shadow-2xl backdrop-blur-sm overflow-hidden">
-               <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-2">
-                    <Settings size={14} className="text-cyan-500 animate-spin-slow" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Positionnement Tactique</span>
-                  </div>
-                  <div className="h-px flex-1 bg-zinc-900 mx-6 opacity-50" />
-                  <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">{data.formation}</span>
-               </div>
-               <Pitch 
-                 players={data.starters} 
-                 positions={data.positions} 
-                 isEditable={false} 
-                 onClickPlayer={(p) => handlePlayerClick(p, team.name)}
-               />
+        <div className={cn("flex flex-col gap-8 lg:gap-12", !isLeft && "lg:flex-row-reverse", isLeft && "lg:flex-row")}>
+          {/* Main Column: Pitch & Starters */}
+          <div className="flex-1 space-y-8 min-w-0">
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-gradient-to-b from-cyan-500/5 to-transparent blur-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+              <div className="relative rounded-[2.5rem] border border-zinc-800 bg-zinc-950/50 p-8 shadow-2xl backdrop-blur-sm overflow-hidden">
+                 <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-2">
+                      <Settings size={14} className="text-cyan-500 animate-spin-slow" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Positionnement Tactique</span>
+                    </div>
+                    <div className="h-px flex-1 bg-zinc-900 mx-6 opacity-50" />
+                    <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">{data.formation}</span>
+                 </div>
+                 <Pitch 
+                   players={data.starters} 
+                   positions={data.positions} 
+                   isEditable={false} 
+                   onClickPlayer={(p) => handlePlayerClick(p, team.name)}
+                 />
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                 <div className="h-px flex-1 bg-zinc-900" />
+                 <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600">Onze de Départ</h4>
+                 <div className="h-px flex-1 bg-zinc-900" />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {data.starters.map((p: any) => (
+                  <PlayerCard key={p.id} player={p} isLeft={isLeft} colorClass={isLeft ? "text-cyan-400" : "text-rose-400"} teamName={team.name} />
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-               <div className="h-px flex-1 bg-zinc-900" />
-               <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600">Onze de Départ</h4>
-               <div className="h-px flex-1 bg-zinc-900" />
+          {/* Side Column: Coach & Substitutes */}
+          <div className="w-full lg:w-80 space-y-8 shrink-0">
+            {/* Coach Card */}
+            <div className="space-y-6">
+               <div className="flex items-center gap-4">
+                 <div className="h-px flex-1 bg-zinc-900" />
+                 <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600">Entraîneur</h4>
+                 <div className="h-px flex-1 bg-zinc-900" />
+               </div>
+               <div className={cn("flex items-center gap-4 rounded-2xl bg-zinc-900 px-4 py-3 border border-zinc-800 shadow-lg", !isLeft && "flex-row-reverse text-right")}>
+                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-zinc-800 overflow-hidden border border-zinc-700">
+                   {team.coachPhotoUrl ? (
+                     <img src={team.coachPhotoUrl} alt="Coach" className="h-full w-full object-cover" />
+                   ) : (
+                     <User size={20} className="text-zinc-500" />
+                   )}
+                 </div>
+                 <div className="flex-1 overflow-hidden">
+                   <p className="truncate text-xs font-black text-white uppercase">{team.coachFirstName} {team.coachLastName}</p>
+                   <p className="text-[9px] text-zinc-500 uppercase tracking-widest mt-0.5">Coach</p>
+                 </div>
+               </div>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {data.starters.map((p: any) => (
-                <PlayerCard key={p.id} player={p} isLeft={isLeft} colorClass={isLeft ? "text-cyan-400" : "text-rose-400"} teamName={team.name} />
-              ))}
-            </div>
-          </div>
-          
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-               <div className="h-px flex-1 bg-zinc-900" />
-               <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600">Banc de Touche</h4>
-               <div className="h-px flex-1 bg-zinc-900" />
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {data.substitutes.map((p: any) => (
-                <PlayerCard key={p.id} player={p} isLeft={isLeft} colorClass={isLeft ? "text-cyan-400" : "text-rose-400"} teamName={team.name} />
-              ))}
+
+            {/* Substitutes */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                 <div className="h-px flex-1 bg-zinc-900" />
+                 <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600">Banc de Touche</h4>
+                 <div className="h-px flex-1 bg-zinc-900" />
+              </div>
+              <div className="grid gap-3">
+                {data.substitutes.map((p: any) => (
+                  <PlayerCard key={p.id} player={p} isLeft={isLeft} colorClass={isLeft ? "text-cyan-400" : "text-rose-400"} teamName={team.name} />
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -159,7 +187,7 @@ export function Lineups({ teamA, teamB, match }: LineupsProps) {
 
   return (
     <>
-      <div className="grid gap-12 xl:grid-cols-2">
+      <div className="space-y-16">
         <TeamSection team={teamA} data={dataA} isLeft={true} />
         <TeamSection team={teamB} data={dataB} isLeft={false} />
       </div>

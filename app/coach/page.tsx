@@ -6,6 +6,7 @@ import Link from "next/link";
 import { CoachAddPlayer } from "./_components/CoachAddPlayer";
 import { CoachPlayersList } from "./_components/CoachPlayersList";
 import { CoachEditTeam } from "./_components/CoachEditTeam";
+import { CoachEditProfile } from "./_components/CoachEditProfile";
 import { LogOut, Eye, User, Calendar, Plus, Users, Trophy } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -86,7 +87,10 @@ export default async function CoachDashboard() {
                 <User size={14} className="text-cyan-500" />
                 Coach: {coachFirstName} {coachLastName}
               </div>
-              <CoachEditTeam team={team} />
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <CoachEditTeam team={team} />
+                <CoachEditProfile team={team} />
+              </div>
             </div>
 
             <div className="flex items-center gap-4 mt-6 md:mt-0">
