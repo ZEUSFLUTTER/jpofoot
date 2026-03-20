@@ -98,9 +98,6 @@ export default function ManagerLogin() {
             </button>
           </form>
 
-          <div className="pt-4 text-center border-t border-zinc-900/50">
-             <a href="/admin/login" className="text-[10px] font-black uppercase text-zinc-600 hover:text-white transition-colors tracking-widest">Accès Administrateur</a>
-          </div>
         </div>
       </div>
     </main>
