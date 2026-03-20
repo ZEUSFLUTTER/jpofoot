@@ -109,8 +109,11 @@ export default function CoachLoginPage() {
         </form>
 
         <div className="text-center pt-4 flex justify-center">
-          <a href="/" className="flex items-center gap-2 text-[10px] font-bold text-zinc-600 hover:text-cyan-400 uppercase tracking-widest transition-colors">
-            <ArrowLeft size={14} /> Retour au site public
+          <a href="/" className="group flex items-center gap-2 text-[10px] font-bold text-zinc-500 hover:text-cyan-400 uppercase tracking-widest transition-all">
+            <span className="flex items-center justify-center w-6 h-6 rounded-full border border-zinc-700 group-hover:border-cyan-500/50 group-hover:bg-cyan-500/10 transition-all">
+              <ArrowLeft size={12} className="transition-transform group-hover:-translate-x-0.5" />
+            </span>
+            Retour au site public
           </a>
         </div>
       </div>

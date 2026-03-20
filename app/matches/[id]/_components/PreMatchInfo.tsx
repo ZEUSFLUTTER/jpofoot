@@ -34,8 +34,10 @@ export function PreMatchInfo({ match, h2hMatches, teamAForm, teamBForm }: PreMat
     const lineup = match.lineups?.[isTeamA ? 'teamA' : 'teamB'];
     const team = isTeamA ? match.teamA : match.teamB;
     if (!lineup || !lineup.starting11) return null;
+    if (!team?.players || !Array.isArray(team.players)) return null;
     
     const starters = team.players.filter((p: any) => lineup.starting11.includes(p.id));
+    if (!starters || starters.length === 0) return null;
     return { starters, positions: lineup.positions || {}, formation: lineup.formation };
   };
 

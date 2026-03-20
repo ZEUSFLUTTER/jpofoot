@@ -76,7 +76,7 @@ export default function Pitch({ players, positions, onPositionChange, isEditable
       </div>
 
       {/* Players */}
-      {players.map((player) => {
+      {(players || []).map((player) => {
         const pos = positions[player.id] || { x: 50, y: 50 };
         const isSelected = draggedPlayerId === player.id;
 

@@ -348,6 +348,15 @@ export function ManagerControlRoom({ match, players, managerName, showBackButton
                                <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest">{e.player?.lastName || "Inconnu"}</p>
                             </div>
                          </div>
+                         {match.status !== MatchStatus.FINI && (
+                           <button onClick={() => {
+                             if(confirm("Supprimer cet évènement et annuler ses statistiques ?")) {
+                               fetch(`/api/admin/matches/${match.id}/event/${e.id}`, { method: 'DELETE' }).then(() => router.refresh());
+                             }
+                           }} className="opacity-0 group-hover:opacity-100 p-2 text-zinc-600 hover:text-rose-500 transition-all">
+                             <Trash2 size={14} />
+                           </button>
+                         )}
                       </div>
                     ))}
                     {(!match.events || match.events.length === 0) && (
