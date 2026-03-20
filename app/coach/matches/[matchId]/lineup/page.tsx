@@ -58,15 +58,53 @@ export default function LineupBuilderPage() {
     if (newFormation === "Personnalisé") return;
     
     const defaults = DEFAULT_POSITIONS[newFormation];
+    if (!defaults) return;
     const newPositions: Record<string, Position> = { ...positions };
     
-    starting11.forEach((id, index) => {
-      if (defaults[index]) {
-        newPositions[id] = defaults[index];
-      }
+    // Separate GK and outfield starters
+    const gkStarters = starting11.filter(id => {
+      const p = players.find(pp => pp.id === id);
+      const pos = (p?.position || "").toLowerCase();
+      return pos.includes("gardien") || pos === "gk" || pos === "goalkeeper";
+    });
+    const outfieldStarters = starting11.filter(id => !gkStarters.includes(id));
+
+    // Assign GK(s) to slot 0
+    gkStarters.forEach(id => { newPositions[id] = defaults[0]; });
+    // Assign outfield players to remaining slots (1-10)
+    const nonGkSlots = defaults.slice(1);
+    outfieldStarters.forEach((id, index) => {
+      if (nonGkSlots[index]) newPositions[id] = nonGkSlots[index];
     });
     setPositions(newPositions);
   };
+
+  function getAutoPosition(playerId: string, allStarters: string[]): Position {
+    if (formation === "Personnalisé") return { x: 50, y: 50 };
+    const defaults = DEFAULT_POSITIONS[formation];
+    if (!defaults) return { x: 50, y: 50 };
+
+    const player = players.find(p => p.id === playerId);
+    const pos = (player?.position || "").toLowerCase();
+    const isGK = pos.includes("gardien") || pos === "gk" || pos === "goalkeeper";
+
+    if (isGK) {
+      return defaults[0]; // goal post slot
+    }
+
+    // Non-GK slots are indices 1-10
+    const nonGkSlots = defaults.slice(1);
+    // Count non-GK starters before this player
+    const nonGkBefore = allStarters
+      .filter(id => id !== playerId)
+      .filter(id => {
+        const p = players.find(pp => pp.id === id);
+        const pPos = (p?.position || "").toLowerCase();
+        return !(pPos.includes("gardien") || pPos === "gk" || pPos === "goalkeeper");
+      });
+    const slotIdx = Math.min(nonGkBefore.length, nonGkSlots.length - 1);
+    return nonGkSlots[slotIdx] || { x: 50, y: 50 };
+  }
 
   function togglePlayer(playerId: string) {
     if (starting11.includes(playerId)) {
@@ -80,16 +118,8 @@ export default function LineupBuilderPage() {
       if (starting11.length < 11) {
         const newStarting = [...starting11, playerId];
         setStarting11(newStarting);
-        
-        if (formation === "Personnalisé") {
-          setPositions({ ...positions, [playerId]: { x: 50, y: 50 } });
-        } else {
-          const defaults = DEFAULT_POSITIONS[formation];
-          const index = newStarting.length - 1;
-          if (defaults[index]) {
-            setPositions({ ...positions, [playerId]: defaults[index] });
-          }
-        }
+        const autoPos = getAutoPosition(playerId, newStarting);
+        setPositions({ ...positions, [playerId]: autoPos });
       } else if (substitutes.length < 5) {
         setSubstitutes([...substitutes, playerId]);
       }
