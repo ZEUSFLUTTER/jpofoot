@@ -32,7 +32,26 @@ type Player = {
 export function CoachAddPlayer({ teamId, players = [] }: { teamId: string; players?: Player[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState("");
+
+  async function uploadFile(file: File): Promise<string | null> {
+    if (!file || file.size === 0) return null;
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      return data.url;
+    } catch (err: any) {
+      setMessage(`Erreur upload: ${err.message}`);
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -40,11 +59,22 @@ export function CoachAddPlayer({ teamId, players = [] }: { teamId: string; playe
     setMessage("");
 
     const formData = new FormData(e.currentTarget);
+    const file = formData.get("photoFile") as File;
+    let photoUrl = "";
+    if (file && file.size > 0) {
+      photoUrl = (await uploadFile(file)) || "";
+      if (!photoUrl && file.size > 0) {
+         setLoading(false);
+         return; // Upload failed, error message already set
+      }
+    }
+
     const payload = {
       firstName: formData.get("firstName"),
       lastName: formData.get("lastName"),
       number: Number(formData.get("number")),
       position: formData.get("position"),
+      photoUrl,
       teamId,
     };
 
@@ -124,6 +154,18 @@ export function CoachAddPlayer({ teamId, players = [] }: { teamId: string; playe
             <option value="">Poste</option>
             {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
+        </div>
+        <div className="space-y-1">
+          <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+            <User size={12} />
+            Photo
+          </label>
+          <input 
+            type="file" 
+            name="photoFile" 
+            accept="image/*"
+            className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-1.5 text-[10px] text-zinc-400 file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3 file:py-1 file:text-[10px] file:font-black file:uppercase file:text-cyan-500 hover:file:bg-zinc-700 transition-all outline-none" 
+          />
         </div>
         <div className="md:col-span-2 lg:col-span-4 flex justify-end">
           <button

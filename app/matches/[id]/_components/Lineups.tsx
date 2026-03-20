@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 import Pitch from "@/components/Pitch";
 import { Users, Shield, Layout, Settings } from "lucide-react";
+import { useState } from "react";
+import { PlayerProfileModal } from "@/components/PlayerProfileModal";
 
 interface LineupsProps {
   teamA: any;
@@ -9,6 +11,14 @@ interface LineupsProps {
 }
 
 export function Lineups({ teamA, teamB, match }: LineupsProps) {
+  const [selectedPlayer, setSelectedPlayer] = useState<any>(null);
+  const [selectedTeamName, setSelectedTeamName] = useState<string>("");
+
+  const handlePlayerClick = (player: any, teamName: string) => {
+    setSelectedPlayer(player);
+    setSelectedTeamName(teamName);
+  };
+
   const getLineupData = (teamId: string, isTeamA: boolean) => {
     const lineup = match.lineups?.[isTeamA ? 'teamA' : 'teamB'];
     const team = isTeamA ? teamA : teamB;
@@ -30,11 +40,14 @@ export function Lineups({ teamA, teamB, match }: LineupsProps) {
   const dataA = getLineupData(match.teamAId, true);
   const dataB = getLineupData(match.teamBId, false);
 
-  const PlayerCard = ({ player, isLeft, colorClass }: { player: any; isLeft: boolean; colorClass: string }) => (
-    <div className={cn(
-      "flex items-center gap-4 rounded-2xl bg-zinc-900 px-4 py-3 border border-zinc-800 hover:bg-zinc-800/80 transition-all group hover:border-cyan-500/20 shadow-lg",
-      !isLeft && "flex-row-reverse text-right"
-    )}>
+  const PlayerCard = ({ player, isLeft, colorClass, teamName }: { player: any; isLeft: boolean; colorClass: string; teamName: string }) => (
+    <div 
+      onClick={() => handlePlayerClick(player, teamName)}
+      className={cn(
+        "flex items-center gap-4 rounded-2xl bg-zinc-900 px-4 py-3 border border-zinc-800 hover:bg-zinc-800/80 transition-all group hover:border-cyan-500/20 shadow-lg cursor-pointer",
+        !isLeft && "flex-row-reverse text-right"
+      )}
+    >
       <div className={cn(
         "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-zinc-800 font-black text-sm group-hover:scale-110 transition-transform border border-zinc-700 overflow-hidden relative",
         colorClass
@@ -88,7 +101,7 @@ export function Lineups({ teamA, teamB, match }: LineupsProps) {
       {data.isFullSquad ? (
         <div className="grid gap-3 sm:grid-cols-2">
           {team.players.map((p: any) => (
-            <PlayerCard key={p.id} player={p} isLeft={isLeft} colorClass={isLeft ? "text-cyan-400" : "text-rose-400"} />
+            <PlayerCard key={p.id} player={p} isLeft={isLeft} colorClass={isLeft ? "text-cyan-400" : "text-rose-400"} teamName={team.name} />
           ))}
         </div>
       ) : (
@@ -109,6 +122,7 @@ export function Lineups({ teamA, teamB, match }: LineupsProps) {
                  players={data.starters} 
                  positions={data.positions} 
                  isEditable={false} 
+                 onClickPlayer={(p) => handlePlayerClick(p, team.name)}
                />
             </div>
           </div>
@@ -121,7 +135,7 @@ export function Lineups({ teamA, teamB, match }: LineupsProps) {
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {data.starters.map((p: any) => (
-                <PlayerCard key={p.id} player={p} isLeft={isLeft} colorClass={isLeft ? "text-cyan-400" : "text-rose-400"} />
+                <PlayerCard key={p.id} player={p} isLeft={isLeft} colorClass={isLeft ? "text-cyan-400" : "text-rose-400"} teamName={team.name} />
               ))}
             </div>
           </div>
@@ -134,7 +148,7 @@ export function Lineups({ teamA, teamB, match }: LineupsProps) {
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {data.substitutes.map((p: any) => (
-                <PlayerCard key={p.id} player={p} isLeft={isLeft} colorClass={isLeft ? "text-cyan-400" : "text-rose-400"} />
+                <PlayerCard key={p.id} player={p} isLeft={isLeft} colorClass={isLeft ? "text-cyan-400" : "text-rose-400"} teamName={team.name} />
               ))}
             </div>
           </div>
@@ -144,9 +158,19 @@ export function Lineups({ teamA, teamB, match }: LineupsProps) {
   );
 
   return (
-    <div className="grid gap-12 xl:grid-cols-2">
-      <TeamSection team={teamA} data={dataA} isLeft={true} />
-      <TeamSection team={teamB} data={dataB} isLeft={false} />
-    </div>
+    <>
+      <div className="grid gap-12 xl:grid-cols-2">
+        <TeamSection team={teamA} data={dataA} isLeft={true} />
+        <TeamSection team={teamB} data={dataB} isLeft={false} />
+      </div>
+
+      {selectedPlayer && (
+        <PlayerProfileModal 
+          player={selectedPlayer}
+          teamName={selectedTeamName}
+          onClose={() => setSelectedPlayer(null)}
+        />
+      )}
+    </>
   );
 }

@@ -28,7 +28,26 @@ type Player = {
 export function CoachEditPlayer({ player, onCancel }: { player: Player; onCancel: () => void }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState("");
+
+  async function uploadFile(file: File): Promise<string | null> {
+    if (!file || file.size === 0) return null;
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      return data.url;
+    } catch (err: any) {
+      setMessage(`Erreur upload: ${err.message}`);
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -36,11 +55,25 @@ export function CoachEditPlayer({ player, onCancel }: { player: Player; onCancel
     setMessage("");
 
     const formData = new FormData(e.currentTarget);
+    const file = formData.get("photoFile") as File;
+    let photoUrl = player.photoUrl;
+
+    if (file && file.size > 0) {
+      const uploadedUrl = await uploadFile(file);
+      if (uploadedUrl) {
+        photoUrl = uploadedUrl;
+      } else {
+        setLoading(false);
+        return;
+      }
+    }
+
     const payload = {
       firstName: formData.get("firstName"),
       lastName: formData.get("lastName"),
       number: Number(formData.get("number")),
       position: formData.get("position"),
+      photoUrl,
     };
 
     try {
@@ -102,6 +135,15 @@ export function CoachEditPlayer({ player, onCancel }: { player: Player; onCancel
               {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Photo (optionnel)</label>
+          <input 
+            type="file" 
+            name="photoFile" 
+            accept="image/*"
+            className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-1.5 text-[10px] text-zinc-400 file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3 file:py-1 file:text-[10px] file:font-black file:uppercase file:text-cyan-500 hover:file:bg-zinc-700 transition-all outline-none" 
+          />
         </div>
         <div className="flex gap-4 pt-2">
           <button type="button" onClick={onCancel} className="flex-1 rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-xs font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-all">Annuler</button>

@@ -17,9 +17,10 @@ interface PitchProps {
   positions: Record<string, Position>;
   onPositionChange?: (playerId: string, pos: Position) => void;
   isEditable?: boolean;
+  onClickPlayer?: (player: Player) => void;
 }
 
-export default function Pitch({ players, positions, onPositionChange, isEditable = false }: PitchProps) {
+export default function Pitch({ players, positions, onPositionChange, isEditable = false, onClickPlayer }: PitchProps) {
   const pitchRef = useRef<HTMLDivElement>(null);
   const [draggedPlayerId, setDraggedPlayerId] = useState<string | null>(null);
 
@@ -84,6 +85,11 @@ export default function Pitch({ players, positions, onPositionChange, isEditable
             key={player.id}
             onPointerDown={(e) => handlePointerDown(e, player.id)}
             onPointerUp={handlePointerUp}
+            onClick={() => {
+              if (!isEditable && onClickPlayer) {
+                onClickPlayer(player);
+              }
+            }}
             className={cn(
               "absolute -translate-x-1/2 -translate-y-1/2 transition-shadow cursor-default group",
               isEditable && "cursor-grab active:cursor-grabbing hover:scale-110",

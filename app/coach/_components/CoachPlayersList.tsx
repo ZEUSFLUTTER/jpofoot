@@ -44,8 +44,16 @@ export function CoachPlayersList({ players }: { players: Player[] }) {
           {players.map(player => (
             <div key={player.id} className="flex items-center justify-between gap-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-4 hover:border-cyan-500/30 transition-all group">
               <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-zinc-900 flex items-center justify-center text-sm font-black text-zinc-700 border border-zinc-800 group-hover:text-cyan-500 group-hover:border-cyan-500/20 transition-all">
-                  #{player.number}
+                <div className="h-12 w-12 flex-shrink-0 rounded-full bg-zinc-900 flex items-center justify-center border border-zinc-800 group-hover:border-cyan-500/40 transition-all relative overflow-hidden">
+                  {player.photoUrl ? (
+                    <>
+                      <img src={player.photoUrl} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute inset-0 bg-black/40" />
+                      <span className="relative z-10 text-xs font-black text-white drop-shadow-md">#{player.number}</span>
+                    </>
+                  ) : (
+                    <span className="text-sm font-black text-zinc-700 group-hover:text-cyan-500 transition-colors">#{player.number}</span>
+                  )}
                 </div>
                 <div>
                   <p className="font-black text-zinc-100 group-hover:text-white transition-colors capitalize">{player.firstName} {player.lastName}</p>
