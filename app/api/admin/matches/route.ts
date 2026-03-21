@@ -87,7 +87,7 @@ export async function POST(request: Request) {
     const matchData = {
       teamAId: parsed.data.teamAId,
       teamBId: parsed.data.teamBId,
-      date: Timestamp.fromDate(new Date(parsed.data.date)),
+      date: parsed.data.date ? Timestamp.fromDate(new Date(parsed.data.date)) : Timestamp.now(),
       title: parsed.data.title || null,
       meetUrl: (body as any).meetUrl || null,
       status: MatchStatus.PREVU,

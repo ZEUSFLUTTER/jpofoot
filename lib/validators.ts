@@ -14,11 +14,11 @@ export const createTeamSchema = z.object({
 export const updateTeamSchema = createTeamSchema.partial();
 
 export const createPlayerSchema = z.object({
-  firstName: z.string().min(2),
-  lastName: z.string().min(2),
-  number: z.coerce.number().int().min(1).max(99),
+  firstName: z.string().min(1, "Le prénom est requis"),
+  lastName: z.string().min(1, "Le nom est requis"),
+  number: z.coerce.number().int().min(0).max(99),
   teamId: z.string().min(1),
-  position: z.string().optional(),
+  position: z.string().optional().or(z.literal("")),
   photoUrl: z.string().optional().or(z.literal("")),
 });
 
@@ -27,8 +27,8 @@ export const updatePlayerSchema = createPlayerSchema.partial();
 export const createMatchSchema = z.object({
   teamAId: z.string().min(1),
   teamBId: z.string().min(1),
-  date: z.string().datetime(),
-  title: z.string().optional(),
+  date: z.string().datetime().optional().or(z.literal("")),
+  title: z.string().optional().or(z.literal("")),
   meetUrl: z.string().url().optional().or(z.literal("")),
 });
 

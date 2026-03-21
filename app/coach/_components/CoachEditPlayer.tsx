@@ -118,17 +118,17 @@ export function CoachEditPlayer({ player, onCancel }: { player: Player; onCancel
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1">
             <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Prénom</label>
-            <input name="firstName" required defaultValue={player.firstName} className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white focus:border-cyan-500 outline-none transition-all" />
+            <input name="firstName" defaultValue={player.firstName} className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white focus:border-cyan-500 outline-none transition-all" />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Nom</label>
-            <input name="lastName" required defaultValue={player.lastName} className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white focus:border-cyan-500 outline-none transition-all" />
+            <input name="lastName" defaultValue={player.lastName} className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white focus:border-cyan-500 outline-none transition-all" />
           </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1">
             <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Numéro</label>
-            <input name="number" type="number" required defaultValue={player.number} className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white focus:border-cyan-500 outline-none transition-all" />
+            <input name="number" type="number" defaultValue={player.number} className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white focus:border-cyan-500 outline-none transition-all" />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Poste</label>

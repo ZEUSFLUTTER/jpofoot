@@ -395,10 +395,10 @@ export function AdminPanel({ teams, matches, managers }: Props) {
     const isoDate = rawDate ? new Date(rawDate).toISOString() : "";
     
     const payload = {
-      title,
+      title: title || null,
       teamAId,
       teamBId,
-      date: isoDate,
+      date: isoDate || null,
       meetUrl: (formData.get("meetUrl") as string)?.trim() || null,
     };
     const response = await fetch("/api/admin/matches", {
@@ -791,7 +791,7 @@ export function AdminPanel({ teams, matches, managers }: Props) {
                         <h4 className="text-sm font-black uppercase tracking-widest text-white">Planifier Match</h4>
                       </div>
                       
-                      <select name="title" required className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-xs font-bold uppercase text-white outline-none focus:border-cyan-500">
+                      <select name="title" className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-xs font-bold uppercase text-white outline-none focus:border-cyan-500">
                          <option value="">Sélectionnez le type de match</option>
                          <option value="Match de poule">Match de poule</option>
                          <option value="Demi-finale">Demi-finale</option>
@@ -1189,7 +1189,7 @@ export function AdminPanel({ teams, matches, managers }: Props) {
                  <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">Éditer Équipe</h2>
                  <button type="button" onClick={() => setEditingTeam(null)} className="text-zinc-500 hover:text-white"><X size={16} /></button>
               </div>
-              <input name="name" required defaultValue={editingTeam.name} className="w-full bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm outline-none focus:border-cyan-500" />
+              <input name="name" defaultValue={editingTeam.name} className="w-full bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm outline-none focus:border-cyan-500" />
               <div className="grid grid-cols-2 gap-4">
                  <select name="poule" defaultValue={editingTeam.poule || ""} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-[10px] font-bold uppercase text-white outline-none focus:border-cyan-500">
                     <option value="">Sélectionner Poule</option>
@@ -1201,8 +1201,8 @@ export function AdminPanel({ teams, matches, managers }: Props) {
                  <input name="colors" defaultValue={editingTeam.colors || ""} placeholder="Couleurs" className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm outline-none focus:border-cyan-500" />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                 <input name="coachFirstName" required defaultValue={editingTeam.coachFirstName} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm outline-none focus:border-cyan-500" />
-                 <input name="coachLastName" required defaultValue={editingTeam.coachLastName} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm outline-none focus:border-cyan-500" />
+                 <input name="coachFirstName" defaultValue={editingTeam.coachFirstName} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm outline-none focus:border-cyan-500" />
+                 <input name="coachLastName" defaultValue={editingTeam.coachLastName} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm outline-none focus:border-cyan-500" />
               </div>
               <button className="w-full bg-cyan-600 py-4 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg active:scale-95">Enregistrer</button>
            </form>
@@ -1217,11 +1217,11 @@ export function AdminPanel({ teams, matches, managers }: Props) {
                  <button type="button" onClick={() => setEditingPlayer(null)} className="text-zinc-500 hover:text-white"><X size={16} /></button>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                 <input name="firstName" required defaultValue={editingPlayer.firstName} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm focus:border-emerald-500 outline-none" />
-                 <input name="lastName" required defaultValue={editingPlayer.lastName} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm focus:border-emerald-500 outline-none" />
+                 <input name="firstName" defaultValue={editingPlayer.firstName} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm focus:border-emerald-500 outline-none" />
+                 <input name="lastName" defaultValue={editingPlayer.lastName} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm focus:border-emerald-500 outline-none" />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                 <input name="number" type="number" required defaultValue={editingPlayer.number} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm focus:border-emerald-500 outline-none" />
+                 <input name="number" type="number" defaultValue={editingPlayer.number} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-sm focus:border-emerald-500 outline-none" />
                  <select name="position" defaultValue={editingPlayer.position || ""} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-xs font-bold uppercase text-white outline-none focus:border-emerald-500">
                     {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
                  </select>
