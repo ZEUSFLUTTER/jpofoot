@@ -38,10 +38,15 @@ export async function PATCH(
       return NextResponse.json({ error: "Action non autorisée sur ce joueur" }, { status: 403 });
     }
 
-    await updateDoc(playerRef, {
+    const updateData: any = {
       ...parsed.data,
       updatedAt: new Date(),
-    });
+    };
+
+    if (updateData.firstName === "") delete updateData.firstName;
+    if (updateData.lastName === "") delete updateData.lastName;
+
+    await updateDoc(playerRef, updateData);
 
     return NextResponse.json({ message: "Joueur mis à jour" });
   } catch (error) {

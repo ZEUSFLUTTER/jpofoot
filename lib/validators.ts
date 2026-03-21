@@ -14,8 +14,8 @@ export const createTeamSchema = z.object({
 export const updateTeamSchema = createTeamSchema.partial();
 
 export const createPlayerSchema = z.object({
-  firstName: z.string().min(1, "Le prénom est requis"),
-  lastName: z.string().min(1, "Le nom est requis"),
+  firstName: z.string().optional().or(z.literal("")),
+  lastName: z.string().optional().or(z.literal("")),
   number: z.coerce.number().int().min(0).max(99),
   teamId: z.string().min(1),
   position: z.string().optional().or(z.literal("")),

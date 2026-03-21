@@ -92,7 +92,15 @@ export function CoachEditPlayer({ player, onCancel }: { player: Player; onCancel
         }, 1000);
       } else {
         const data = await res.json();
-        setMessage(data.error || "Une erreur est survenue");
+        if (data.error && typeof data.error === 'object') {
+          // It's likely a Zod flattened error
+          const msg = data.error.fieldErrors 
+            ? Object.values(data.error.fieldErrors).flat().join(", ")
+            : "Erreur de validation";
+          setMessage(msg);
+        } else {
+          setMessage(data.error || "Une erreur est survenue");
+        }
       }
     } catch (err) {
       setMessage("Erreur de connexion");
@@ -109,8 +117,10 @@ export function CoachEditPlayer({ player, onCancel }: { player: Player; onCancel
       </div>
 
       {message && (
-        <div className={`mb-4 rounded-xl border p-4 text-center ${message.includes("mis à jour") ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400" : "border-rose-500/20 bg-rose-500/10 text-rose-400"}`}>
-          <p className="text-xs font-black uppercase tracking-widest">{message}</p>
+        <div className={`mb-4 rounded-xl border p-4 text-center ${typeof message === 'string' && message.includes("mis à jour") ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400" : "border-rose-500/20 bg-rose-500/10 text-rose-400"}`}>
+          <p className="text-xs font-black uppercase tracking-widest">
+            {typeof message === 'string' ? message : "Erreur de validation (vérifiez les champs)"}
+          </p>
         </div>
       )}
 

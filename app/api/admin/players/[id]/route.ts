@@ -45,9 +45,13 @@ export async function PATCH(request: Request, context: Context) {
     }
   }
 
-  await updateDoc(playerRef, parsed.data as any);
+  const updateData: any = { ...parsed.data };
+  if (updateData.firstName === "") delete updateData.firstName;
+  if (updateData.lastName === "") delete updateData.lastName;
 
-  return NextResponse.json({ id, ...currentPlayer, ...parsed.data });
+  await updateDoc(playerRef, updateData);
+
+  return NextResponse.json({ id, ...currentPlayer, ...updateData });
 }
 
 export async function DELETE(request: Request, context: Context) {

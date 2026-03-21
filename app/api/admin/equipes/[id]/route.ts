@@ -14,10 +14,15 @@ export async function PATCH(request: Request, context: Context) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const teamRef = doc(db, "teams", id);
-  await updateDoc(teamRef, parsed.data as any);
+  const updateData: any = { ...parsed.data };
+  if (updateData.name === "") delete updateData.name;
+  if (updateData.coachFirstName === "") delete updateData.coachFirstName;
+  if (updateData.coachLastName === "") delete updateData.coachLastName;
 
-  return NextResponse.json({ id, ...parsed.data });
+  const teamRef = doc(db, "teams", id);
+  await updateDoc(teamRef, updateData);
+
+  return NextResponse.json({ id, ...updateData });
 }
 
 export async function DELETE(request: Request, context: Context) {
