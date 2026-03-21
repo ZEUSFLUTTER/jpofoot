@@ -107,8 +107,10 @@ export function CoachEditProfile({ team }: { team: Team }) {
         </div>
 
         {message && (
-          <div className={`mb-6 rounded-xl border p-4 text-center ${message.includes("mise à jour") ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400" : "border-rose-500/20 bg-rose-500/10 text-rose-400"}`}>
-            <p className="text-xs font-black uppercase tracking-widest">{message}</p>
+          <div className={`mb-6 rounded-xl border p-4 text-center ${typeof message === 'string' && message.includes("mise à jour") ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400" : "border-rose-500/20 bg-rose-500/10 text-rose-400"}`}>
+            <p className="text-xs font-black uppercase tracking-widest">
+              {typeof message === 'string' ? message : "Erreur de validation"}
+            </p>
           </div>
         )}
 

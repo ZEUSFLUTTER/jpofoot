@@ -47,7 +47,14 @@ export function CoachEditTeam({ team }: { team: Team }) {
         }, 1000);
       } else {
         const data = await res.json();
-        setMessage(data.error || "Une erreur est survenue");
+        if (data.error && typeof data.error === 'object') {
+          const msg = data.error.fieldErrors 
+            ? Object.values(data.error.fieldErrors).flat().join(", ")
+            : "Erreur de validation";
+          setMessage(msg);
+        } else {
+          setMessage(data.error || "Une erreur est survenue");
+        }
       }
     } catch (err) {
       setMessage("Erreur de connexion");
@@ -76,24 +83,26 @@ export function CoachEditTeam({ team }: { team: Team }) {
         </div>
 
         {message && (
-          <div className={`mb-4 rounded-xl border p-4 text-center ${message.includes("mise à jour") ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400" : "border-rose-500/20 bg-rose-500/10 text-rose-400"}`}>
-            <p className="text-xs font-black uppercase tracking-widest">{message}</p>
+          <div className={`mb-4 rounded-xl border p-4 text-center ${typeof message === 'string' && message.includes("mise à jour") ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400" : "border-rose-500/20 bg-rose-500/10 text-rose-400"}`}>
+            <p className="text-xs font-black uppercase tracking-widest">
+              {typeof message === 'string' ? message : "Erreur de validation (vérifiez les champs)"}
+            </p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
             <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Nom du Club</label>
-            <input name="name" required defaultValue={team.name} className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white focus:border-cyan-500 outline-none" />
+            <input name="name" defaultValue={team.name} className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white focus:border-cyan-500 outline-none" />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
               <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Prénom Coach</label>
-              <input name="coachFirstName" required defaultValue={team.coachFirstName} className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white focus:border-cyan-500 outline-none" />
+              <input name="coachFirstName" defaultValue={team.coachFirstName} className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white focus:border-cyan-500 outline-none" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Nom Coach</label>
-              <input name="coachLastName" required defaultValue={team.coachLastName} className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white focus:border-cyan-500 outline-none" />
+              <input name="coachLastName" defaultValue={team.coachLastName} className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white focus:border-cyan-500 outline-none" />
             </div>
           </div>
           <div className="space-y-1">

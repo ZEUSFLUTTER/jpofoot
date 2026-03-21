@@ -105,7 +105,14 @@ export function CoachAddPlayer({ teamId, players = [] }: { teamId: string; playe
         router.refresh();
       } else {
         const data = await res.json();
-        setMessage(data.error || "Une erreur est survenue");
+        if (data.error && typeof data.error === 'object') {
+          const msg = data.error.fieldErrors 
+            ? Object.values(data.error.fieldErrors).flat().join(", ")
+            : "Erreur de validation";
+          setMessage(msg);
+        } else {
+          setMessage(data.error || "Une erreur est survenue");
+        }
       }
     } catch (err) {
       setMessage("Erreur de connexion");
@@ -117,9 +124,11 @@ export function CoachAddPlayer({ teamId, players = [] }: { teamId: string; playe
   return (
     <div className="space-y-4">
       {message && (
-        <div className={`flex items-center gap-3 rounded-xl border p-4 ${message.includes("succès") ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400" : "border-rose-500/20 bg-rose-500/10 text-rose-400"}`}>
+        <div className={`flex items-center gap-3 rounded-xl border p-4 ${typeof message === 'string' && message.includes("succès") ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400" : "border-rose-500/20 bg-rose-500/10 text-rose-400"}`}>
           <CheckCircle2 size={16} />
-          <p className="text-[10px] font-black uppercase tracking-widest leading-none">{message}</p>
+          <p className="text-[10px] font-black uppercase tracking-widest leading-none">
+            {typeof message === 'string' ? message : "Erreur de validation (vérifiez les champs)"}
+          </p>
         </div>
       )}
 
@@ -129,21 +138,21 @@ export function CoachAddPlayer({ teamId, players = [] }: { teamId: string; playe
             <User size={12} />
             Prénom
           </label>
-          <input name="firstName" required className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2 text-sm text-white focus:border-cyan-500/50 outline-none" placeholder="Prénom" />
+          <input name="firstName" className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2 text-sm text-white focus:border-cyan-500/50 outline-none" placeholder="Prénom" />
         </div>
         <div className="space-y-1">
           <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
             <User size={12} />
             Nom
           </label>
-          <input name="lastName" required className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2 text-sm text-white focus:border-cyan-500/50 outline-none" placeholder="Nom" />
+          <input name="lastName" className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2 text-sm text-white focus:border-cyan-500/50 outline-none" placeholder="Nom" />
         </div>
         <div className="space-y-1">
           <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
             <Hash size={12} />
             Numéro
           </label>
-          <input name="number" type="number" required className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2 text-sm text-white focus:border-cyan-500/50 outline-none" placeholder="7" />
+          <input name="number" type="number" className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2 text-sm text-white focus:border-cyan-500/50 outline-none" placeholder="7" />
         </div>
         <div className="space-y-1">
           <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
