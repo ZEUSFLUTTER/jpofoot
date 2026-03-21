@@ -2,24 +2,24 @@ import { EventType, MatchStatus } from "./types";
 import { z } from "zod";
 
 export const createTeamSchema = z.object({
-  name: z.string().min(2),
-  logoUrl: z.string().url().optional().or(z.literal("")),
-  colors: z.string().optional(),
-  poule: z.string().optional(),
-  coachFirstName: z.string().min(2),
-  coachLastName: z.string().min(2),
-  coachPhotoUrl: z.string().url().optional().or(z.literal("")),
+  name: z.string().min(1),
+  logoUrl: z.string().url().optional().or(z.literal("")).nullable(),
+  colors: z.string().optional().nullable(),
+  poule: z.string().optional().nullable(),
+  coachFirstName: z.string().min(1),
+  coachLastName: z.string().min(1),
+  coachPhotoUrl: z.string().url().optional().or(z.literal("")).nullable(),
 });
 
 export const updateTeamSchema = createTeamSchema.partial();
 
 export const createPlayerSchema = z.object({
-  firstName: z.string().optional().or(z.literal("")),
-  lastName: z.string().optional().or(z.literal("")),
+  firstName: z.string().optional().or(z.literal("")).nullable(),
+  lastName: z.string().optional().or(z.literal("")).nullable(),
   number: z.coerce.number().int().min(0).max(99),
   teamId: z.string().min(1),
-  position: z.string().optional().or(z.literal("")),
-  photoUrl: z.string().optional().or(z.literal("")),
+  position: z.string().optional().or(z.literal("")).nullable(),
+  photoUrl: z.string().optional().or(z.literal("")).nullable(),
 });
 
 export const updatePlayerSchema = createPlayerSchema.partial();
@@ -27,9 +27,9 @@ export const updatePlayerSchema = createPlayerSchema.partial();
 export const createMatchSchema = z.object({
   teamAId: z.string().min(1),
   teamBId: z.string().min(1),
-  date: z.string().datetime().optional().or(z.literal("")),
-  title: z.string().optional().or(z.literal("")),
-  meetUrl: z.string().url().optional().or(z.literal("")),
+  date: z.string().datetime().optional().or(z.literal("")).nullable(),
+  title: z.string().optional().or(z.literal("")).nullable(),
+  meetUrl: z.string().url().optional().or(z.literal("")).nullable(),
 });
 
 export const updateMatchSchema = createMatchSchema.partial();
